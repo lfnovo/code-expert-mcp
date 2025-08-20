@@ -1,8 +1,6 @@
 """Integration tests for provider framework with existing code."""
 
 import os
-from pathlib import Path
-import pytest
 from unittest.mock import patch
 
 from code_expert.repository.path_utils import is_git_url, get_cache_path, parse_github_url

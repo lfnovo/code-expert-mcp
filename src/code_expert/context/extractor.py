@@ -5,7 +5,6 @@ Following extract_repo_files.py implementation exactly.
 
 from pathlib import Path
 from typing import Set, Dict, Any, List
-import re
 
 
 class RepoMapExtractor:

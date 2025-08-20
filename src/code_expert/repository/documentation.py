@@ -3,12 +3,10 @@ Repository documentation discovery functionality.
 """
 
 import os
-import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, Any
 from identify import identify
-from datetime import datetime
 
 from ..config import load_config
 from .path_utils import get_cache_path

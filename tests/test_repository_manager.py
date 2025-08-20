@@ -1,11 +1,7 @@
 import pytest
 from pathlib import Path
-import shutil
-import git
-from git.repo import Repo
 
-from code_expert.repository import Repository, RepositoryManager
-from code_expert.config import RepositoryConfig
+from code_expert.repository import Repository
 
 
 @pytest.fixture

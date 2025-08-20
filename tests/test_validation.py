@@ -2,11 +2,7 @@
 
 import os
 import time
-from pathlib import Path
-import pytest
-from unittest.mock import patch, MagicMock
-import tempfile
-import shutil
+from unittest.mock import patch
 
 from code_expert.repository.path_utils import is_git_url, get_cache_path, parse_github_url
 from code_expert.repository.providers import get_provider, get_default_registry
@@ -328,9 +324,6 @@ class TestBackwardsCompatibilityRegression:
     def test_import_compatibility_comprehensive(self):
         """Test all import patterns still work."""
         # Test individual imports
-        from code_expert.repository.path_utils import is_git_url
-        from code_expert.repository.path_utils import get_cache_path
-        from code_expert.repository.path_utils import parse_github_url
         
         # Test module import
         from code_expert.repository import path_utils
@@ -339,12 +332,6 @@ class TestBackwardsCompatibilityRegression:
         assert hasattr(path_utils, 'parse_github_url')
         
         # Test provider imports
-        from code_expert.repository.providers import GitProvider
-        from code_expert.repository.providers import GitHubProvider
-        from code_expert.repository.providers import AzureDevOpsProvider
-        from code_expert.repository.providers import ProviderRegistry
-        from code_expert.repository.providers import get_provider
-        from code_expert.repository.providers import get_default_registry
         
         # All imports should work without errors
         assert True

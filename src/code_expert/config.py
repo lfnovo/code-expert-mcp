@@ -4,8 +4,6 @@ Configuration management for the Code Understanding server.
 
 import importlib.resources
 import logging
-import os
-import platform
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -327,7 +325,7 @@ def load_config(
     logger.info(f"  Log Level: {config.log_level}")
     if config.repository:
         final_cache_dir = config.repository.get_cache_dir_path()  # Ensures path is resolved and created
-        logger.info(f"  Repository:")
+        logger.info("  Repository:")
         logger.info(f"    Cache Directory: {final_cache_dir}")
         logger.info(f"    Max Cached Repos: {config.repository.max_cached_repos}")
     if config.documentation:

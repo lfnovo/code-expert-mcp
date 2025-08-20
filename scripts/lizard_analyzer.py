@@ -80,7 +80,7 @@ def analyze_repo(repo_path: str, output_csv: str = None, top_n: int = None):
     else:
         print("\n⚠️ No output file specified. Use --output FILE.csv to save results.")
 
-    print(f"\n📦 Repository Summary:")
+    print("\n📦 Repository Summary:")
     print(f"  Total Files with Functions: {total_files}")
     print(f"  Total Functions: {total_functions}")
     print(f"  Total NLOC: {total_nloc}")

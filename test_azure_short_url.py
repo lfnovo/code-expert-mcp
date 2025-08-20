@@ -32,7 +32,7 @@ for url in urls:
         # Test URL parsing
         try:
             components = provider.parse_url(url)
-            print(f"Parsed components:")
+            print("Parsed components:")
             print(f"  Organization: {components.get('organization')}")
             print(f"  Project: {components.get('project')}")
             print(f"  Repository: {components.get('repo')}")

@@ -1,16 +1,7 @@
-# ⚠️ Platform Support Notice
 
-**This MCP server currently only works on Mac or Linux. Windows is NOT supported at this time.**
-
-*Support for Windows is planned for a future release, and work is ongoing to enable compatibility.*
-
-# Code Understanding MCP Server
+# Code Expert MCP Server
 
 An MCP (Model Context Protocol) server designed to understand codebases and provide intelligent context to AI coding assistants. This server handles local directories, GitHub repositories, and Azure DevOps repositories, supporting standard MCP-compliant operations.
-
-## 🤖 AI Assistant Installation
-
-**Have an AI coding assistant help you install this server!** Copy and paste the contents of our [AI Setup Prompt](docs/AI_SETUP_GUIDE.md) to your AI assistant (Claude, ChatGPT, Cursor, etc.) and it will guide you through the entire installation process.
 
 ## Features
 
@@ -108,14 +99,6 @@ For uvx method (less reliable):
 }
 ```
 
-## Why Use this MCP Server?
-
-# MCP Code Understanding Server
-
-## Value Proposition
-
-The MCP Code Understanding Server empowers AI assistants with comprehensive code comprehension capabilities, enabling them to provide more accurate, contextual, and practical assistance with software development tasks. By creating a semantic bridge between repositories and AI systems, this server dramatically reduces the time and friction involved in code exploration, analysis, and implementation guidance.
-
 ## Common Use Cases
 
 ### Reference Repository Analysis
@@ -132,13 +115,6 @@ The MCP Code Understanding Server empowers AI assistants with comprehensive code
 - Extract business logic and domain knowledge embedded in code
 - Identify and document system integration points and dependencies
 
-### Codebase Assessment and Improvement
-- Analyze technical debt and prioritize refactoring efforts
-- Identify security vulnerabilities and compliance issues
-- Assess test coverage and quality
-- Detect dead code, duplicated logic, and optimization opportunities
-- Evaluate implementation against design patterns and architectural principles
-
 ### Legacy System Understanding
 - Recover knowledge from systems with minimal documentation
 - Support migration planning by understanding system boundaries
@@ -152,11 +128,6 @@ The MCP Code Understanding Server empowers AI assistants with comprehensive code
 - Identify reusable components across multiple projects
 - Understand differences in implementation approaches between teams
 - Facilitate knowledge sharing in distributed development environments
-
-For detailed examples of how the MCP Code Understanding Server can be used in real-world scenarios, see our [Example Scenarios](docs/Code_Understanding_Scenarios.md) document. It includes step-by-step walkthroughs of:
-- Accelerating developer onboarding to a complex codebase
-- Planning and executing API migrations
-- Conducting security vulnerability assessments
 
 ## How It Works
 

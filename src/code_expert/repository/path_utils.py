@@ -14,7 +14,6 @@ Backwards Compatibility:
 """
 
 import hashlib
-import re
 import logging
 from pathlib import Path
 from typing import Tuple, Optional

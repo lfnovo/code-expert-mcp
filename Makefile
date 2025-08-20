@@ -67,3 +67,13 @@ stop: ## Stop docker-compose services
 # Build and run locally
 .PHONY: dev
 dev: build-local run ## Build locally and run with docker-compose
+
+ruff:
+	ruff check . --fix
+
+tag:
+	@version=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	echo "Creating tag v$$version"; \
+	git tag "v$$version"; \
+	git push origin "v$$version"
+

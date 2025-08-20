@@ -6,7 +6,7 @@ providers and automatically detecting which provider to use for a given URL.
 """
 
 import os
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional
 
 from .base import GitProvider
 from .github import GitHubProvider

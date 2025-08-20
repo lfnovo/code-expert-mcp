@@ -521,7 +521,7 @@ NOTE: This tool supports both broad and focused analysis strategies. Response ha
         """
         try:
             # DEBUG: Log the parameters received at MCP endpoint
-            logger.debug(f"[MCP DEBUG] get_source_repo_map called with:")
+            logger.debug("[MCP DEBUG] get_source_repo_map called with:")
             logger.debug(f"[MCP DEBUG]   repo_path: {repo_path}")
             logger.debug(f"[MCP DEBUG]   files: {files}")
             logger.debug(f"[MCP DEBUG]   directories: {directories}")
@@ -747,7 +747,7 @@ NOTE: This tool is designed to guide initial codebase exploration by identifying
                                             "_cached_at": cached_analysis.get("analyzed_at"),
                                         }
                                     else:
-                                        logger.info(f"Cache is stale (commit changed), running fresh analysis")
+                                        logger.info("Cache is stale (commit changed), running fresh analysis")
 
             # Before running fresh analysis, check if clone/copy just completed
             # to avoid duplicate analysis while background task is starting
@@ -766,7 +766,7 @@ NOTE: This tool is designed to guide initial codebase exploration by identifying
                                 completed_time = datetime.fromisoformat(completed_at)
                                 if datetime.now() - completed_time < timedelta(seconds=30):
                                     # Clone just completed, background analysis should be starting
-                                    logger.info(f"Repository was just cloned/copied, background analysis should be starting")
+                                    logger.info("Repository was just cloned/copied, background analysis should be starting")
                                     return {
                                         "status": "waiting", 
                                         "message": "Repository setup just completed. Critical files analysis is starting in background. Please try again in a few moments.",

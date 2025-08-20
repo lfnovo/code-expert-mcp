@@ -6,8 +6,7 @@ Following pattern_search_test.py exactly.
 import fnmatch
 import os
 import re
-from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
 # Default patterns to exclude from searches
 DEFAULT_EXCLUDE_DIRS = {

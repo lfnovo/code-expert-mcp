@@ -6,11 +6,9 @@ import asyncio
 import logging
 import os
 import shutil
-import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, Literal
-from urllib.parse import urlparse
 
 import git
 import pathspec
@@ -492,7 +490,7 @@ class RepositoryManager:
             # Import here to avoid circular dependency
             try:
                 from ..context.builder import RepoMapBuilder
-            except ImportError as e:
+            except ImportError:
                 # Fallback to mock if aider is not available
                 from ..context.mock_builder import RepoMapBuilder
 
@@ -871,7 +869,7 @@ class RepositoryManager:
             # Start repo map build
             try:
                 from ..context.builder import RepoMapBuilder
-            except ImportError as e:
+            except ImportError:
                 # Fallback to mock if aider is not available
                 from ..context.mock_builder import RepoMapBuilder
 

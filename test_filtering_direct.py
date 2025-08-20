@@ -7,7 +7,6 @@ This test creates a mock repository structure and tests the filtering.
 import asyncio
 import sys
 import tempfile
-import os
 from pathlib import Path
 
 # Add the src directory to the path

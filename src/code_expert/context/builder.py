@@ -5,17 +5,16 @@ Following test_repo_map_simple.py's core RepoMap interaction patterns.
 
 import asyncio
 import os
-import time
 from datetime import datetime
 import logging
 import tiktoken
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Any
+from typing import Dict, List, Optional, Any
 from aider.io import InputOutput
 from aider.repomap import RepoMap
 from .extended_repo_map import UntruncatedRepoMap
 
-from ..repository.cache import RepositoryCache, RepositoryMetadata
+from ..repository.cache import RepositoryCache
 from ..repository.file_filtering import RepoFilter
 from ..repository.path_utils import get_cache_path
 from .extractor import RepoMapExtractor
@@ -398,7 +397,7 @@ class RepoMapBuilder:
                 if clone_status and clone_status["status"] in ["cloning", "copying"]:
                     return {
                         "status": "waiting",
-                        "message": f"Repository clone is in progress. Please try again later.",
+                        "message": "Repository clone is in progress. Please try again later.",
                         "retry_guidance": {
                             "suggested_retry_seconds": 30,  # Conservative default during clone
                             "size_context": "Repository clone in progress, size unknown",
@@ -588,7 +587,7 @@ class RepoMapBuilder:
                 if clone_status and clone_status["status"] in ["cloning", "copying"]:
                     return {
                         "status": "waiting",
-                        "message": f"Repository clone is in progress. Please try again later.",
+                        "message": "Repository clone is in progress. Please try again later.",
                     }
                 else:
                     return {

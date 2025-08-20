@@ -92,7 +92,7 @@ class CodeComplexityAnalyzer:
                     ]:
                         return {
                             "status": "waiting",
-                            "message": f"Repository clone is in progress. Please try again later.",
+                            "message": "Repository clone is in progress. Please try again later.",
                         }
                     else:
                         return {
@@ -124,7 +124,7 @@ class CodeComplexityAnalyzer:
             if "clone in progress" in str(e).lower():
                 return {
                     "status": "waiting",
-                    "message": f"Repository clone is in progress. Please try again later.",
+                    "message": "Repository clone is in progress. Please try again later.",
                 }
 
             return {"status": "error", "error": f"Repository error: {str(e)}"}
@@ -326,7 +326,6 @@ class CodeComplexityAnalyzer:
             cache_path: The absolute path to the cached repository
         """
         from datetime import datetime
-        from pathlib import Path
         import git
         
         logger.info(f"Starting background critical files analysis for {cache_path}")
@@ -376,7 +375,6 @@ class CodeComplexityAnalyzer:
             # The analyze_repo_critical_files expects the original path
             # Get the original URL from metadata
             original_path = None
-            from filelock import FileLock
             with self.repo_manager.cache._file_lock():
                 metadata = self.repo_manager.cache._read_metadata()
                 if cache_path in metadata:

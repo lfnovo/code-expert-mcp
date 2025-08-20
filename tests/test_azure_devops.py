@@ -14,11 +14,10 @@ import pytest
 import tempfile
 import hashlib
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-from code_expert.repository.providers.base import GitProvider
 from code_expert.repository.providers.azure_devops import AzureDevOpsProvider
-from code_expert.repository.providers.registry import ProviderRegistry, get_default_registry
+from code_expert.repository.providers.registry import ProviderRegistry
 
 
 class TestAzureDevOpsProvider:

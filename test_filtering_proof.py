@@ -13,7 +13,6 @@ This test will:
 import asyncio
 import sys
 import tempfile
-import shutil
 from pathlib import Path
 
 # Add the src directory to the path
@@ -175,7 +174,7 @@ async def test_filtering_proof():
             tokens3 = result3['metadata']['output_tokens']
             tokens4 = result4['metadata']['output_tokens']
             
-            print(f"Token usage comparison:")
+            print("Token usage comparison:")
             print(f"  Full repository: {tokens1} tokens")
             print(f"  Directories only: {tokens2} tokens ({tokens2/tokens1*100:.1f}% of full)")
             print(f"  Files only: {tokens3} tokens ({tokens3/tokens1*100:.1f}% of full)")
