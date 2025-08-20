@@ -1,5 +1,5 @@
 # Variables
-IMAGE_NAME = lfnovo/code-understanding
+IMAGE_NAME = lfnovo/code-expert-mcp
 PLATFORMS = linux/amd64,linux/arm64
 BUILDER_NAME = multiplatform-builder
 
