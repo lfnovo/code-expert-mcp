@@ -396,6 +396,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aider-chat" },
     { name = "aiohttp" },
+    { name = "click" },
     { name = "configargparse" },
     { name = "debugpy" },
     { name = "esperanto" },
@@ -432,6 +433,7 @@ requires-dist = [
     { name = "aider-chat", specifier = "==0.84.0" },
     { name = "aiohttp", specifier = "==3.11.18" },
     { name = "black", marker = "extra == 'dev'", specifier = "==25.1.0" },
+    { name = "click", specifier = ">=8.1.8" },
     { name = "configargparse", specifier = "==1.7.1" },
     { name = "debugpy", specifier = "==1.8.14" },
     { name = "esperanto", specifier = ">=2.4.1" },

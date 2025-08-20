@@ -43,6 +43,7 @@ dependencies = [
     "uvicorn==0.34.0", # For HTTP transport support
     "starlette==0.45.2", # For OAuth endpoints # For form data handling
     "python-multipart==0.0.17",
+    "click>=8.1.8",
 ]
 
 [project.optional-dependencies]

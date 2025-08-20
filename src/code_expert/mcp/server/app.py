@@ -13,7 +13,6 @@ from code_expert.config import ServerConfig, load_config
 from code_expert.repository import RepositoryManager
 from code_expert.context.builder import RepoMapBuilder
 from code_expert.repository.documentation import get_repository_documentation
-from code_expert.ai import CodeExplanationAgent
 
 # Configure logging
 logging.basicConfig(
