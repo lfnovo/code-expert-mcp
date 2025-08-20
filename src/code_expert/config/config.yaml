@@ -1,0 +1,40 @@
+name: "Code Understanding Server"
+log_level: "debug"
+
+repository:
+  # cache_dir: "~/.cache/code-expert-mcp"
+  max_cached_repos: 10
+
+documentation:
+  include_tags:
+    - markdown
+    - rst
+    - adoc
+  include_extensions:
+    - .md
+    - .markdown
+    - .rst
+    - .txt
+    - .adoc
+    - .ipynb
+  format_mapping:
+    tag:markdown: markdown
+    tag:rst: restructuredtext
+    tag:adoc: asciidoc
+    ext:.md: markdown
+    ext:.markdown: markdown
+    ext:.rst: restructuredtext
+    ext:.txt: plaintext
+    ext:.adoc: asciidoc
+    ext:.ipynb: jupyter
+  category_patterns:
+    readme: 
+      - readme
+    api: 
+      - api
+    documentation:
+      - docs
+      - documentation
+    examples:
+      - examples
+      - sample

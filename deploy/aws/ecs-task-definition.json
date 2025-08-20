@@ -1,0 +1,58 @@
+{
+  "family": "code-expert-mcp",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "volumes": [
+    {
+      "name": "cache-volume",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-xxxxxx",
+        "rootDirectory": "/",
+        "transitEncryption": "ENABLED",
+        "authorizationConfig": {
+          "accessPointId": "fsap-xxxxxx",
+          "iam": "ENABLED"
+        }
+      }
+    }
+  ],
+  "containerDefinitions": [
+    {
+      "name": "code-expert-mcp",
+      "image": "YOUR_ECR_REPO_URI:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3001,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "PYTHONPATH",
+          "value": "/app"
+        },
+        {
+          "name": "MAX_CACHED_REPOS",
+          "value": "50"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "cache-volume",
+          "containerPath": "/cache"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/code-expert-mcp",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
