@@ -283,11 +283,20 @@ class RepositoryManager:
         cache_path = Path(str_path)
 
         try:
-            # Update status to cloning/copying
+            # Update status to cloning/copying (preserving existing started_at if present)
             status_msg = "copying" if is_local else "cloning"
+            
+            # Get current metadata to preserve existing started_at timestamp
+            current_metadata = await self.cache.get_repository_status(str_path)
+            started_at = datetime.now().isoformat()
+            if (current_metadata and 
+                current_metadata.get("clone_status") and 
+                current_metadata["clone_status"].get("started_at")):
+                started_at = current_metadata["clone_status"]["started_at"]
+            
             await self.cache.update_clone_status(
                 str_path,
-                {"status": status_msg, "started_at": datetime.now().isoformat()},
+                {"status": status_msg, "started_at": started_at},
             )
 
             # Create parent directories
@@ -534,7 +543,7 @@ class RepositoryManager:
                 },
             )
 
-            # Cleanup failed clone/copy
+            # Cleanup failed clone/copy directory
             if cache_path.exists():
                 shutil.rmtree(cache_path)
             if str_path in self.repositories:
@@ -632,7 +641,15 @@ class RepositoryManager:
         repo_status = await self.cache.get_repository_status(str_path)
         if repo_status and "clone_status" in repo_status:
             clone_status = repo_status["clone_status"]
-            if clone_status and clone_status.get("status") == "complete":
+            
+            # Handle failed clones - clean up and retry
+            if clone_status and clone_status.get("status") == "failed":
+                logger.info(f"Previous clone failed, cleaning up and retrying: {str_path}")
+                await self.cache.remove_repo(str_path)
+                if cache_path.exists():
+                    shutil.rmtree(cache_path)
+                # Fall through to fresh clone attempt
+            elif clone_status and clone_status.get("status") == "complete":
                 # Check if we need to switch branches (only for shared strategy)
                 stored_branch = repo_status.get("requested_branch")
                 current_branch = repo_status.get("current_branch")
@@ -676,7 +693,7 @@ class RepositoryManager:
                         "current_branch": stored_branch,
                         "cache_strategy": cache_strategy
                     }
-            elif clone_status and clone_status.get("status") in ["cloning", "copying"]:
+            elif clone_status and clone_status.get("status") in ["pending", "cloning", "copying"]:
                 return {
                     "status": "clone_in_progress",
                     "path": str_path,
@@ -693,6 +710,17 @@ class RepositoryManager:
         if not await self.cache.prepare_for_clone(str_path):
             logger.error("Failed to prepare cache for clone")
             return {"status": "error", "error": "Failed to prepare cache for clone"}
+
+        # Create initial metadata entry immediately to prevent race condition
+        # where analysis tools check for repository before _do_clone creates metadata
+        await self.cache.update_clone_status(
+            str_path,
+            {
+                "status": "pending",
+                "started_at": datetime.now().isoformat(),
+                "message": "Clone starting"
+            }
+        )
 
         try:
             # Start clone in background
