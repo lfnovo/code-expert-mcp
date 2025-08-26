@@ -484,8 +484,21 @@ class RepositoryManager:
             )
             logger.info(f"Clone status updated successfully for: {str_path}")
 
-            # Register the repo with original URL and branch information
-            await self.cache.add_repo(str_path, original_url, branch, cache_strategy)
+            # Determine the actual current branch after cloning
+            actual_branch = branch  # Default to requested branch
+            if not is_local:
+                try:
+                    repo = Repo(cache_path)
+                    if not repo.head.is_detached:
+                        actual_branch = repo.active_branch.name
+                        logger.debug(f"Repository cloned to branch: {actual_branch}")
+                    else:
+                        logger.debug("Repository is in detached HEAD state")
+                except Exception as e:
+                    logger.warning(f"Could not determine current branch: {e}")
+
+            # Register the repo with original URL and actual branch information
+            await self.cache.add_repo(str_path, original_url, actual_branch, cache_strategy)
 
             # Import here to avoid circular dependency
             try:

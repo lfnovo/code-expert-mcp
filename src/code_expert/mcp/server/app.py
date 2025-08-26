@@ -417,10 +417,6 @@ CACHE STRATEGIES:
             - Per-branch strategy allows simultaneous access to different branches
         """
         try:
-            # Default branch to "main" if not provided
-            if branch is None:
-                branch = "main"
-            
             # Validate cache_strategy
             if cache_strategy not in ["shared", "per-branch"]:
                 return {"status": "error", "error": "cache_strategy must be 'shared' or 'per-branch'"}
