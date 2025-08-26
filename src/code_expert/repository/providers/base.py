@@ -2,7 +2,7 @@
 Abstract base class for Git providers.
 
 This module defines the interface that all Git hosting providers must implement
-to be compatible with the MCP Code Understanding Server.
+to be compatible with the MCP Code Expert Server.
 """
 
 from abc import ABC, abstractmethod

@@ -1,5 +1,5 @@
 """
-Git provider framework for the MCP Code Understanding Server.
+Git provider framework for the MCP Code Expert Server.
 
 This package provides a pluggable framework for supporting different Git hosting
 providers (GitHub, GitLab, Bitbucket, etc.) through a common interface.

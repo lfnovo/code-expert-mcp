@@ -1,5 +1,5 @@
 """
-Configuration management for the Code Understanding server.
+Configuration management for the Code Expert server.
 """
 
 import importlib.resources
@@ -79,7 +79,7 @@ class RepositoryConfig:
 
 @dataclass
 class ServerConfig:
-    name: str = "Code Understanding Server"
+    name: str = "Code Expert Server"
     log_level: str = "info"
     host: str = "localhost"
     port: int = 8080

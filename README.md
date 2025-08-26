@@ -131,7 +131,7 @@ For uvx method (less reliable):
 
 ## How It Works
 
-The MCP Code Understanding Server processes repositories through a series of analysis steps:
+The MCP Code Expert Server processes repositories through a series of analysis steps:
 
 1. **Repository Cloning**: The server clones the target repository into its cache
 2. **Structure Analysis**: Analysis of directories, files, and their organization
@@ -422,7 +422,7 @@ The server uses a `config.yaml` file for base configuration. This file is automa
 Here's the default configuration structure:
 
 ```yaml
-name: "Code Understanding Server"
+name: "Code Expert Server"
 log_level: "debug"
 
 repository:

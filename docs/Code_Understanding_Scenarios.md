@@ -4,13 +4,13 @@
 
 Michael is a senior developer at a financial technology company that has just acquired a startup with a promising trading algorithm implementation. The acquired codebase is complex, with minimal documentation, and the original developers are only available for a limited transition period. Michael needs to onboard his team to understand, maintain, and eventually enhance this codebase.
 
-### With MCP Code Understanding Server
+### With MCP Code Expert Server
 
 **Michael**: "I need to quickly understand the architecture of this trading algorithm repository and prepare onboarding materials for my team."
 
 **AI Assistant**: "I can help analyze the repository to extract its key architectural patterns and create onboarding documentation. First, I'll need to clone the repository for analysis."
 
-*[AI uses the MCP Code Understanding Server to clone the repository]*
+*[AI uses the MCP Code Expert Server to clone the repository]*
 
 **AI Assistant**: "I've begun cloning the repository. Now, let me retrieve the repository structure to understand its organization."
 
@@ -83,7 +83,7 @@ Would you like me to generate a detailed technical debt assessment with recommen
 
 ### The Outcome
 
-With the help of the AI assistant powered by the MCP Code Understanding Server:
+With the help of the AI assistant powered by the MCP Code Expert Server:
 
 1. Michael's team gained a comprehensive understanding of the acquired codebase in days rather than weeks
 2. The technical debt assessment allowed for strategic planning of refactoring efforts
@@ -91,7 +91,7 @@ With the help of the AI assistant powered by the MCP Code Understanding Server:
 4. The team documented key architectural decisions and patterns
 5. Knowledge transfer from the original development team was more efficient and focused
 
-The MCP Code Understanding Server enabled the AI to extract knowledge from the codebase through a series of targeted analysis steps (cloning, structure analysis, critical file identification, documentation retrieval, semantic mapping, and specific file examination), providing insights that would have taken extensive manual investigation.
+The MCP Code Expert Server enabled the AI to extract knowledge from the codebase through a series of targeted analysis steps (cloning, structure analysis, critical file identification, documentation retrieval, semantic mapping, and specific file examination), providing insights that would have taken extensive manual investigation.
 
 
 ## Example Scenario: API Migration Planning
@@ -107,13 +107,13 @@ Emma is a technical lead at a SaaS company that has built their product on a thi
 
 Emma estimates it would take weeks of manual code review to identify all API usage patterns and create a comprehensive migration plan.
 
-### With MCP Code Understanding Server
+### With MCP Code Expert Server
 
 **Emma**: "We need to migrate from PaymentProvider API v1 to v2 in the next 6 months. Can you help me understand how extensively we're using the API and create a migration plan?"
 
 **AI Assistant**: "I can help analyze your codebase to identify all PaymentProvider API usage patterns and create a migration plan. First, I'll need to clone your repository."
 
-*[AI uses the MCP Code Understanding Server to clone the repository]*
+*[AI uses the MCP Code Expert Server to clone the repository]*
 
 **AI Assistant**: "I've started cloning your repository. Let me examine the repository structure to understand the organization."
 
@@ -203,7 +203,7 @@ Would you like me to outline a phased migration approach?"
 
 ### The Outcome
 
-With the help of the AI assistant powered by the MCP Code Understanding Server:
+With the help of the AI assistant powered by the MCP Code Expert Server:
 
 1. Emma's team identified all API usage patterns in hours rather than weeks
 2. They gained a comprehensive understanding of integration complexity across their codebase
@@ -211,7 +211,7 @@ With the help of the AI assistant powered by the MCP Code Understanding Server:
 4. They identified high-risk areas early, allowing focused testing and risk mitigation
 5. The migration was completed successfully before the deprecation deadline
 
-The MCP Code Understanding Server enabled the AI to perform in-depth analysis of API usage patterns across a complex codebase, providing insights that would have required extensive manual investigation and specialized knowledge of both the application architecture and the payment provider's APIs.
+The MCP Code Expert Server enabled the AI to perform in-depth analysis of API usage patterns across a complex codebase, providing insights that would have required extensive manual investigation and specialized knowledge of both the application architecture and the payment provider's APIs.
 
 ## Example Scenario: Security Vulnerability Assessment
 
@@ -221,13 +221,13 @@ Jason is a security engineer at a healthcare technology company that develops ap
 
 With over 200,000 lines of code across multiple services and a small security team, manually reviewing all database interaction points would take weeks – time they don't have given the urgency of the potential threat.
 
-### With MCP Code Understanding Server
+### With MCP Code Expert Server
 
 **Jason**: "A competing healthcare application just disclosed a critical SQL injection vulnerability in their patient data API. We need to urgently check if our codebase has similar vulnerabilities in how we handle user input before database queries."
 
 **AI Assistant**: "I'll help you perform a security vulnerability assessment focusing on potential SQL injection risks. Let me first clone your repository."
 
-*[AI uses the MCP Code Understanding Server to clone the repository]*
+*[AI uses the MCP Code Expert Server to clone the repository]*
 
 **AI Assistant**: "I've started cloning your repository. Let me analyze the repository structure to understand its organization."
 
@@ -355,7 +355,7 @@ I can also provide specific test cases for each high-risk component if needed."
 
 ### The Outcome
 
-With the help of the AI assistant powered by the MCP Code Understanding Server:
+With the help of the AI assistant powered by the MCP Code Expert Server:
 
 1. Jason's team identified all potential SQL injection vulnerabilities in hours instead of weeks
 2. They prioritized remediation efforts based on risk assessment
@@ -363,4 +363,4 @@ With the help of the AI assistant powered by the MCP Code Understanding Server:
 4. They established improved security practices and testing procedures
 5. The incident led to a more robust security posture with minimal disruption
 
-The MCP Code Understanding Server enabled the AI to perform targeted security analysis across a complex codebase, providing actionable insights about vulnerability patterns and specific remediation strategies that would have required extensive specialized security knowledge and manual code review.
+The MCP Code Expert Server enabled the AI to perform targeted security analysis across a complex codebase, providing actionable insights about vulnerability patterns and specific remediation strategies that would have required extensive specialized security knowledge and manual code review.

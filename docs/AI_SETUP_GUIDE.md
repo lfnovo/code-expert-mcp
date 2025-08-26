@@ -1,12 +1,12 @@
-# AI Assistant Setup Prompt for MCP Code Understanding Server
+# AI Assistant Setup Prompt for MCP Code Expert Server
 
-Copy and paste this entire prompt to your AI coding assistant to help you install and configure the MCP Code Understanding Server.
+Copy and paste this entire prompt to your AI coding assistant to help you install and configure the MCP Code Expert Server.
 
 ---
 
 ## Instructions for AI Assistant
 
-You are helping me set up the MCP Code Understanding Server. Please follow these steps:
+You are helping me set up the MCP Code Expert Server. Please follow these steps:
 
 ### Step 1: Verify Prerequisites
 
@@ -79,9 +79,9 @@ If the user encounters issues:
 
 ## Example User Interaction
 
-**User**: "Help me set up the MCP code understanding server"
+**User**: "Help me set up the MCP Code Expert Server"
 
-**AI Assistant**: "I'll help you set up the MCP Code Understanding Server. Let me guide you through the installation process.
+**AI Assistant**: "I'll help you set up the MCP Code Expert Server. Let me guide you through the installation process.
 
 First, let's check if you have `uv` installed:
 
