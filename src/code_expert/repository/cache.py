@@ -86,7 +86,7 @@ class RepositoryCache:
         repos = set()
         # Walk through the cache directory structure
         for host_dir in self.cache_dir.iterdir():
-            if not host_dir.is_dir() or host_dir.name in {".git", "__pycache__"}:
+            if not host_dir.is_dir() or host_dir.name in {".git", "__pycache__", "metadata.json", "cache.fslock"}:
                 continue
 
             if host_dir.name == "github":
@@ -97,11 +97,42 @@ class RepositoryCache:
                     for repo_dir in org_dir.iterdir():
                         if repo_dir.is_dir():
                             repos.add(str(repo_dir.resolve()))
+                            
+            elif host_dir.name == "azure":
+                # For Azure DevOps repos, use org/project/repo structure
+                for org_dir in host_dir.iterdir():
+                    if not org_dir.is_dir():
+                        continue
+                    for project_dir in org_dir.iterdir():
+                        if not project_dir.is_dir():
+                            continue
+                        for repo_dir in project_dir.iterdir():
+                            if repo_dir.is_dir():
+                                repos.add(str(repo_dir.resolve()))
+                                
             elif host_dir.name == "local":
                 # For local repos, only add the immediate subdirectories
                 for repo_dir in host_dir.iterdir():
                     if repo_dir.is_dir():
                         repos.add(str(repo_dir.resolve()))
+            else:
+                # Generic handling for other providers (future-proof)
+                # Recursively find all leaf directories (repos)
+                def find_repo_dirs(path, depth=0, max_depth=3):
+                    if depth > max_depth:
+                        return
+                    for item in path.iterdir():
+                        if item.is_dir():
+                            # Check if this looks like a repo (has .git or is a leaf)
+                            has_git = (item / ".git").exists()
+                            has_subdirs = any(p.is_dir() for p in item.iterdir() if p.name not in {".git", "__pycache__"})
+                            
+                            if has_git or not has_subdirs:
+                                repos.add(str(item.resolve()))
+                            else:
+                                find_repo_dirs(item, depth + 1, max_depth)
+                
+                find_repo_dirs(host_dir)
 
         return repos
 
