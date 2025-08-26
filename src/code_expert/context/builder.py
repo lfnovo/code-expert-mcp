@@ -584,9 +584,9 @@ class RepoMapBuilder:
             # for repo map build to complete
             clone_status = metadata.clone_status
             if not clone_status or clone_status["status"] != "complete":
-                if clone_status and clone_status["status"] in ["cloning", "copying"]:
+                if clone_status and clone_status["status"] in ["pending", "cloning", "copying"]:
                     return {
-                        "status": "waiting",
+                        "status": "waiting", 
                         "message": "Repository clone is in progress. Please try again later.",
                     }
                 else:
