@@ -228,16 +228,41 @@ fi
 cat > /usr/local/bin/update-mcp.sh <<'SCRIPT'
 #!/bin/bash
 # Check for Docker image updates
-CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' code-expert-mcp 2>/dev/null)
-docker pull ${docker_image} > /dev/null 2>&1
-NEW_IMAGE=$(docker inspect --format='{{.Id}}' ${docker_image} 2>/dev/null)
 
+echo "Starting MCP image update check..." | logger -t mcp-update
+
+# Get current running image hash
+CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' code-expert-mcp 2>/dev/null)
+if [ -z "$CURRENT_IMAGE" ]; then
+    echo "ERROR: Could not get current image hash. Container may not be running." | logger -t mcp-update
+    exit 1
+fi
+
+echo "Current image hash: $CURRENT_IMAGE" | logger -t mcp-update
+
+# Pull latest image
+echo "Pulling latest image: ${docker_image}" | logger -t mcp-update
+if ! docker pull ${docker_image} > /dev/null 2>&1; then
+    echo "ERROR: Failed to pull image ${docker_image}" | logger -t mcp-update
+    exit 1
+fi
+
+# Get new image hash
+NEW_IMAGE=$(docker inspect --format='{{.Id}}' ${docker_image} 2>/dev/null)
+if [ -z "$NEW_IMAGE" ]; then
+    echo "ERROR: Could not get new image hash after pull" | logger -t mcp-update
+    exit 1
+fi
+
+echo "New image hash: $NEW_IMAGE" | logger -t mcp-update
+
+# Compare and update if needed
 if [ "$CURRENT_IMAGE" != "$NEW_IMAGE" ]; then
-    echo "New image detected, updating service..." | logger -t mcp-update
+    echo "New image found! Updating service..." | logger -t mcp-update
     systemctl restart code-expert-mcp
-    echo "Service updated to new image" | logger -t mcp-update
+    echo "Service successfully updated to new image" | logger -t mcp-update
 else
-    echo "No update needed" | logger -t mcp-update
+    echo "No new image found - service is up to date" | logger -t mcp-update
 fi
 SCRIPT
 
