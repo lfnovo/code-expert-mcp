@@ -1011,6 +1011,133 @@ class RepositoryManager:
                 "error": str(e)
             }
 
+    async def delete_repository(self, repo_identifier: str) -> Dict[str, Any]:
+        """Delete a repository from cache by identifier.
+        
+        This method supports two identification strategies:
+        1. Direct cache path: If repo_identifier is an existing directory path, 
+           it will be treated as a direct cache path and deleted immediately.
+        2. Repository URL: If repo_identifier appears to be a URL, this method will 
+           find all cached entries for that repository and delete them all.
+           
+        Args:
+            repo_identifier: Either:
+                - Repository URL (finds all cache entries for that repo)
+                - Direct cache path (deletes specific cache entry)
+                
+        Returns:
+            Dict with status and details:
+                - {"status": "success", "deleted_paths": [...], "message": "..."}
+                - {"status": "error", "error": "error message"}
+        """
+        # Input validation
+        if not repo_identifier or not isinstance(repo_identifier, str) or not repo_identifier.strip():
+            logger.warning("Empty or invalid repository identifier provided")
+            return {"status": "error", "error": "Repository identifier cannot be empty"}
+        
+        # Sanitize input
+        repo_identifier = repo_identifier.strip()
+        logger.info(f"Deleting repository with identifier: {repo_identifier}")
+        
+        try:
+            # Strategy 1: Check if it's a direct cache path
+            repo_path = Path(repo_identifier)
+            if repo_path.exists() and repo_path.is_dir():
+                # Additional validation: ensure this is actually a repository cache directory
+                # Check if it's within the cache directory and contains repository markers
+                try:
+                    cache_dir = self.cache_dir
+                    if not repo_path.is_relative_to(cache_dir):
+                        logger.warning(f"Path {repo_identifier} is not within cache directory")
+                        return {"status": "error", "error": "Invalid cache path: not within repository cache directory"}
+                    
+                    # Check for repository markers (either .git directory or metadata suggests it's a repo)
+                    has_git = (repo_path / ".git").exists()
+                    # Also accept if the path matches our cache structure patterns
+                    is_cache_path = any(parent.name in ['github', 'git', 'local', 'azure'] for parent in repo_path.parents)
+                    
+                    if not (has_git or is_cache_path):
+                        logger.warning(f"Path {repo_identifier} does not appear to be a repository cache")
+                        return {"status": "error", "error": "Invalid cache path: directory does not appear to be a repository cache"}
+                        
+                except (OSError, ValueError) as e:
+                    logger.warning(f"Failed to validate cache path {repo_identifier}: {e}")
+                    return {"status": "error", "error": f"Invalid cache path: {str(e)}"}
+                
+                logger.debug(f"Treating {repo_identifier} as direct cache path")
+                await self.cache.remove_repo(repo_identifier)
+                
+                # Thread-safe cleanup of in-memory reference
+                try:
+                    if repo_identifier in self.repositories:
+                        del self.repositories[repo_identifier]
+                        logger.debug(f"Removed in-memory reference for {repo_identifier}")
+                except KeyError:
+                    # Race condition - reference was already removed, which is fine
+                    logger.debug(f"In-memory reference for {repo_identifier} was already removed")
+                
+                return {
+                    "status": "success", 
+                    "deleted_paths": [repo_identifier],
+                    "message": f"Successfully deleted repository cache at {repo_identifier}"
+                }
+            
+            # Strategy 2: Treat as repository URL - find all cache entries
+            logger.debug(f"Treating {repo_identifier} as repository URL")
+            branches_result = await self.list_repository_branches(repo_identifier)
+            
+            if branches_result["status"] == "success" and branches_result["cached_branches"]:
+                deleted_paths = []
+                failed_paths = []
+                
+                for branch_info in branches_result["cached_branches"]:
+                    cache_path = branch_info["cache_path"]
+                    try:
+                        await self.cache.remove_repo(cache_path)
+                        deleted_paths.append(cache_path)
+                        logger.info(f"Successfully deleted cache entry: {cache_path}")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete cache entry {cache_path}: {e}")
+                        failed_paths.append(cache_path)
+                        continue
+                
+                # Thread-safe cleanup of in-memory references for deleted paths
+                for deleted_path in deleted_paths:
+                    try:
+                        if deleted_path in self.repositories:
+                            del self.repositories[deleted_path]
+                            logger.debug(f"Removed in-memory reference for {deleted_path}")
+                    except KeyError:
+                        # Race condition - reference was already removed, which is fine
+                        logger.debug(f"In-memory reference for {deleted_path} was already removed")
+                
+                if deleted_paths:
+                    message = f"Successfully deleted {len(deleted_paths)} cache entries for repository: {repo_identifier}"
+                    if failed_paths:
+                        message += f" ({len(failed_paths)} entries failed to delete)"
+                    
+                    return {
+                        "status": "success",
+                        "deleted_paths": deleted_paths,
+                        "message": message
+                    }
+                else:
+                    return {
+                        "status": "error",
+                        "error": f"Failed to delete all cache entries for repository: {repo_identifier}"
+                    }
+            else:
+                # No cached branches found or error occurred
+                if branches_result["status"] != "success":
+                    error_msg = branches_result.get("error", "Unknown error occurred while querying repository cache")
+                    return {"status": "error", "error": f"Failed to query repository cache: {error_msg}"}
+                else:
+                    return {"status": "error", "error": f"No cached entries found for repository: {repo_identifier}"}
+                
+        except Exception as e:
+            logger.error(f"Error deleting repository {repo_identifier}: {e}", exc_info=True)
+            return {"status": "error", "error": str(e)}
+
     async def cleanup(self):
         """Cleanup all repositories on server shutdown."""
         for repo_id, repo in list(self.repositories.items()):

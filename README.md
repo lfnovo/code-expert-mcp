@@ -142,6 +142,29 @@ The MCP Code Expert Server processes repositories through a series of analysis s
 
 AI assistants integrate with the server by making targeted requests for each analytical stage, building a comprehensive understanding of the codebase that can be used to address specific user questions and needs.
 
+## MCP Tools Available
+
+The server provides the following MCP tools for AI assistants to interact with repositories:
+
+### Repository Management
+- **`clone_repo`** - Initialize a repository for analysis by copying it to MCP's cache
+- **`list_repos`** - List all repositories currently in the MCP server's cache with metadata
+- **`list_repository_branches`** - List all cached versions of a repository across different branches
+- **`delete_repo`** - ⚠️ Remove cached repositories from the MCP server to free disk space
+- **`refresh_repo`** - Update a repository with latest changes (manual sync only)
+- **`get_repo_status`** - Check if a repository is cloned and ready for analysis
+
+### Repository Analysis
+- **`get_repo_structure`** - Retrieve directory structure and analyzable file counts
+- **`get_repo_critical_files`** - Identify and analyze the most structurally significant files
+- **`get_source_repo_map`** - Retrieve a semantic analysis map of the repository's source code structure
+- **`get_repo_documentation`** - Retrieve and analyze documentation files from a repository
+
+### File Operations
+- **`get_repo_file_content`** - Retrieve file contents or directory listings from a repository
+
+> **Note**: The `delete_repo` tool is destructive and permanently removes cached repositories. Use with caution as deleted repositories will need to be re-cloned for further analysis.
+
 ## Design Considerations for Large Codebases
 
 The server employs several strategies to maintain performance and usability even with enterprise-scale repositories:

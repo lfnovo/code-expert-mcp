@@ -315,6 +315,71 @@ RETURNS:
             return {"status": "error", "error": str(e)}
 
     @mcp_server.tool(
+        name="delete_repo",
+        description="""Remove a cached repository from the MCP server's cache, including all associated metadata and analysis results.
+
+⚠️ DESTRUCTIVE OPERATION: This permanently removes cached repositories and cannot be undone.
+
+WHAT IT DOES:
+- Removes ALL cached versions of the repository (shared and per-branch cache entries)
+- Deletes associated metadata including clone status and analysis results
+- Frees up disk space and cache slots
+- Cleans up in-memory references
+
+IDENTIFICATION METHODS:
+- Repository URL: Use the same URL format provided to clone_repo
+  Examples: 'https://github.com/user/repo', 'https://dev.azure.com/org/project/_git/repo'
+- Direct cache path: Use the absolute file system path to the cached repository
+  Example: '/path/to/cache/dir/github_com_user_repo_main'
+
+PARAMETER:
+- repo_identifier: Repository URL or direct cache path to identify which repository to delete
+
+USE CASES:
+- Clean up repositories no longer needed for analysis
+- Free cache space when approaching maximum cached repositories limit
+- Remove corrupted or problematic cache entries
+- Cache management and maintenance operations
+
+NOTE: After deletion, the repository will need to be re-cloned via clone_repo before it can be analyzed again.""",
+    )
+    async def delete_repo(repo_identifier: str) -> dict:
+        """
+        Delete a repository from the MCP server's cache.
+
+        Removes cached repositories to free up space and clean up entries that are
+        no longer needed. Supports identification by repository URL or direct cache path.
+        This is a destructive operation that removes all cached versions and metadata.
+
+        Args:
+            repo_identifier (str): Repository identifier - either the repository URL 
+                                 (matching what was used in clone_repo) or the direct 
+                                 cache path to the repository
+
+        Returns:
+            dict: Response with format:
+                {
+                    "status": "success" | "error",
+                    "deleted_paths": [str],  # (On success) List of cache paths that were deleted
+                    "total_deleted": int,    # (On success) Number of cache entries removed
+                    "message": str,          # (On success) Summary of deletion operation
+                    "error": str             # (On error) Error message
+                }
+
+        Note:
+            - This operation is irreversible - deleted cache entries cannot be recovered
+            - Repository will need to be re-cloned before further analysis
+            - Removes ALL cached versions including shared and per-branch entries
+            - For repository URLs, finds and removes all matching cache entries
+            - For direct cache paths, removes the specific cache entry
+        """
+        try:
+            return await repo_manager.delete_repository(repo_identifier)
+        except Exception as e:
+            logger.error(f"Error deleting repository: {e}", exc_info=True)
+            return {"status": "error", "error": str(e)}
+
+    @mcp_server.tool(
         name="list_repos",
         description="List all repositories currently in the MCP server's cache with their complete metadata including clone status, analysis status, branches, and cache sizes.",
     )
