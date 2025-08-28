@@ -43,6 +43,7 @@ jobs:
             - Performance considerations
             - Security concerns
             - Test coverage
+            - If the docs have been properly updated.
             
             Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 

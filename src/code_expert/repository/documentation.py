@@ -160,7 +160,7 @@ async def get_repository_documentation(repo_path: str) -> Dict[str, Any]:
         }
 
     # We need to use RepositoryManager to access cache and metadata properly
-    repo_manager = RepositoryManager(config.repository)
+    repo_manager = RepositoryManager(config.repository, server_config=config)
 
     # Check repository status in metadata using the cache's methods
     with repo_manager.cache._file_lock():

@@ -31,7 +31,7 @@ async def test_filtering_proof():
     # Create a temporary cache directory
     with tempfile.TemporaryDirectory() as temp_dir:
         cache = RepositoryCache(Path(temp_dir))
-        repo_manager = RepositoryManager(cache)
+        repo_manager = RepositoryManager(cache, server_config=None)
         repo_map_builder = RepoMapBuilder(cache)
         
         # Test repository URL - using a smaller repo for faster testing

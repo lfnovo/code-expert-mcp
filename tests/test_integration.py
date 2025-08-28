@@ -164,7 +164,7 @@ class TestDeleteRepoMCPIntegration:
         )
         
         # Initialize repository manager
-        repo_manager = RepositoryManager(config)
+        repo_manager = RepositoryManager(config, server_config=None)
         
         return {
             "repo_manager": repo_manager,
