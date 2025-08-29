@@ -113,7 +113,7 @@ def repository_manager(mock_config, mock_cache):
     """Create a RepositoryManager instance with mocked dependencies."""
     with patch('code_expert.repository.manager.RepositoryCache') as MockCache:
         MockCache.return_value = mock_cache
-        manager = RepositoryManager(mock_config)
+        manager = RepositoryManager(mock_config, server_config=None)
         manager.cache = mock_cache
         return manager
 

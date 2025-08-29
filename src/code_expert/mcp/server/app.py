@@ -30,12 +30,18 @@ def create_mcp_server(config: ServerConfig = None) -> FastMCP:
 
     server = FastMCP(name=config.name)
 
-    # Initialize core components
-    repo_manager = RepositoryManager(config.repository)
+    # Initialize core components - pass full server config for auto-refresh
+    repo_manager = RepositoryManager(config.repository, server_config=config)
     repo_map_builder = RepoMapBuilder(cache=repo_manager.cache)
 
     # Register tools
     register_tools(server, repo_manager, repo_map_builder)
+    
+    # Add auto-refresh management tools
+    register_auto_refresh_tools(server, repo_manager)
+    
+    # Add lifecycle hooks for auto-refresh
+    add_lifecycle_hooks(server, repo_manager)
 
     return server
 
@@ -914,6 +920,102 @@ PARAMETER:
                 "status": "error",
                 "message": f"Failed to retrieve repository documentation: {str(e)}",
             }
+
+def register_auto_refresh_tools(server: FastMCP, repo_manager: RepositoryManager) -> None:
+    """Register auto-refresh management tools."""
+    
+    @server.tool(
+        name="get_auto_refresh_status",
+        description="""Get the current status of the auto-refresh system.
+        
+        Returns information about:
+        - Whether auto-refresh is enabled and running
+        - Number of repositories scheduled for refresh
+        - Next scheduled refresh times
+        - Configuration settings
+        - Recent refresh activity
+        """
+    )
+    async def get_auto_refresh_status() -> dict:
+        """Get auto-refresh system status."""
+        try:
+            return await repo_manager.get_auto_refresh_status()
+        except Exception as e:
+            logger.error(f"Error getting auto-refresh status: {e}", exc_info=True)
+            return {"status": "error", "error": str(e)}
+    
+    @server.tool(
+        name="start_auto_refresh",
+        description="""Manually start the auto-refresh system if it's not already running.
+        
+        This is typically not needed as auto-refresh starts automatically with the server,
+        but can be useful for recovery scenarios or manual management.
+        """
+    )
+    async def start_auto_refresh() -> dict:
+        """Manually start auto-refresh system."""
+        try:
+            await repo_manager.start_auto_refresh()
+            return {"status": "success", "message": "Auto-refresh system started"}
+        except Exception as e:
+            logger.error(f"Error starting auto-refresh: {e}", exc_info=True)
+            return {"status": "error", "error": str(e)}
+    
+    @server.tool(
+        name="stop_auto_refresh",
+        description="""Manually stop the auto-refresh system.
+        
+        This will cancel all scheduled refreshes and stop the background worker.
+        Repositories will no longer be automatically refreshed until the system is restarted.
+        """
+    )
+    async def stop_auto_refresh() -> dict:
+        """Manually stop auto-refresh system."""
+        try:
+            await repo_manager.stop_auto_refresh()
+            return {"status": "success", "message": "Auto-refresh system stopped"}
+        except Exception as e:
+            logger.error(f"Error stopping auto-refresh: {e}", exc_info=True)
+            return {"status": "error", "error": str(e)}
+
+def add_lifecycle_hooks(server: FastMCP, repo_manager: RepositoryManager) -> None:
+    """Add server lifecycle hooks for auto-refresh management."""
+    
+    # Store original lifecycle methods if they exist
+    original_on_startup = getattr(server, '_on_startup', None)
+    original_on_shutdown = getattr(server, '_on_shutdown', None)
+    
+    async def on_startup():
+        """Start auto-refresh system when server starts."""
+        try:
+            if original_on_startup:
+                await original_on_startup()
+            
+            # Start auto-refresh system
+            await repo_manager.start_auto_refresh()
+            logger.info("Server startup completed with auto-refresh system")
+        except Exception as e:
+            logger.error(f"Error during server startup: {e}")
+    
+    async def on_shutdown():
+        """Cleanup auto-refresh system when server shuts down."""
+        try:
+            # Stop auto-refresh system first
+            await repo_manager.stop_auto_refresh()
+            
+            # Cleanup repositories
+            await repo_manager.cleanup()
+            
+            if original_on_shutdown:
+                await original_on_shutdown()
+                
+            logger.info("Server shutdown completed")
+        except Exception as e:
+            logger.error(f"Error during server shutdown: {e}")
+    
+    # Set the lifecycle hooks
+    server._on_startup = on_startup
+    server._on_shutdown = on_shutdown
 
 # Create server instance that can be imported by MCP CLI
 server = create_mcp_server()

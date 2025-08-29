@@ -21,6 +21,17 @@ from .providers.registry import get_default_registry
 
 logger = logging.getLogger(__name__)
 
+# Import auto-refresh components - handle gracefully if not available
+try:
+    from .auto_refresh import AutoRefreshManager
+    from ..config import AutoRefreshConfig
+    AUTO_REFRESH_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Auto-refresh functionality not available: {e}")
+    AUTO_REFRESH_AVAILABLE = False
+    AutoRefreshManager = None
+    AutoRefreshConfig = None
+
 
 class Repository:
     def __init__(
@@ -110,14 +121,43 @@ class Repository:
 
 
 class RepositoryManager:
-    def __init__(self, config: RepositoryConfig):
+    def __init__(self, config: RepositoryConfig, server_config = None):
         self.config = config
+        self.server_config = server_config  # Store full server config for auto-refresh access
         # Use the new method from RepositoryConfig to get the cache directory path
         self.cache_dir = config.get_cache_dir_path()
         # The mkdir is now handled by get_cache_dir_path(), but keeping it here is also fine / doesn't harm.
         # self.cache_dir.mkdir(parents=True, exist_ok=True) # This line can be removed if get_cache_dir_path always ensures existence
         self.repositories: Dict[str, Repository] = {}
         self.cache = RepositoryCache(self.cache_dir, config.max_cached_repos)
+        
+        # Initialize auto-refresh manager if available and enabled
+        self.auto_refresh_manager: Optional[AutoRefreshManager] = None
+        if (AUTO_REFRESH_AVAILABLE and 
+            server_config and 
+            hasattr(server_config, 'auto_refresh') and 
+            server_config.auto_refresh and 
+            server_config.auto_refresh.enabled):
+            try:
+                self.auto_refresh_manager = AutoRefreshManager(
+                    server_config.auto_refresh, 
+                    self
+                )
+                logger.info("Auto-refresh manager initialized")
+            except Exception as e:
+                logger.error(f"Failed to initialize auto-refresh manager: {e}")
+                self.auto_refresh_manager = None
+        else:
+            if not AUTO_REFRESH_AVAILABLE:
+                logger.debug("Auto-refresh not available due to import error")
+            elif not server_config:
+                logger.debug("Auto-refresh not initialized - no server config provided")
+            elif not hasattr(server_config, 'auto_refresh') or not server_config.auto_refresh:
+                logger.debug("Auto-refresh not initialized - no auto_refresh config")
+            elif not server_config.auto_refresh.enabled:
+                logger.debug("Auto-refresh disabled in configuration")
+            else:
+                logger.debug("Auto-refresh not initialized for unknown reason")
 
     def _cleanup_if_needed(self):
         """Remove least recently accessed repositories if over limit."""
@@ -528,6 +568,14 @@ class RepositoryManager:
                 logger.debug(f"Started background critical files analysis for {str_path}")
             except Exception as e:
                 logger.warning(f"Could not start critical files analysis: {str(e)}")
+            
+            # Schedule repository for auto-refresh if auto-refresh manager is available
+            if self.auto_refresh_manager:
+                try:
+                    await self.auto_refresh_manager.schedule_repository_refresh(str_path)
+                    logger.debug(f"Scheduled repository for auto-refresh: {str_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to schedule repository for auto-refresh: {e}")
 
         except Exception as e:
             logger.error(
@@ -925,6 +973,14 @@ class RepositoryManager:
                 logger.debug(f"Started background critical files analysis after refresh for {cache_path}")
             except Exception as e:
                 logger.warning(f"Could not start critical files analysis after refresh: {str(e)}")
+            
+            # Schedule repository for auto-refresh if auto-refresh manager is available
+            if self.auto_refresh_manager:
+                try:
+                    await self.auto_refresh_manager.schedule_repository_refresh(cache_path)
+                    logger.debug(f"Scheduled repository for auto-refresh after refresh: {cache_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to schedule repository for auto-refresh after refresh: {e}")
 
         except Exception as e:
             logger.error(f"Refresh failed for {original_path}: {str(e)}")
@@ -1140,6 +1196,9 @@ class RepositoryManager:
 
     async def cleanup(self):
         """Cleanup all repositories on server shutdown."""
+        # Stop auto-refresh first
+        await self.stop_auto_refresh()
+        
         for repo_id, repo in list(self.repositories.items()):
             try:
                 if repo.root_path.exists():
@@ -1147,3 +1206,39 @@ class RepositoryManager:
                 del self.repositories[repo_id]
             except Exception as e:
                 logger.error(f"Error cleaning up repository {repo_id}: {e}")
+    
+    async def start_auto_refresh(self) -> None:
+        """Start the auto-refresh system if available."""
+        if self.auto_refresh_manager:
+            try:
+                await self.auto_refresh_manager.start()
+                logger.info("Auto-refresh system started")
+            except Exception as e:
+                logger.error(f"Failed to start auto-refresh system: {e}")
+        else:
+            logger.debug("Auto-refresh manager not available - cannot start auto-refresh")
+    
+    async def stop_auto_refresh(self) -> None:
+        """Stop the auto-refresh system if running."""
+        if self.auto_refresh_manager:
+            try:
+                await self.auto_refresh_manager.stop()
+                logger.info("Auto-refresh system stopped")
+            except Exception as e:
+                logger.error(f"Failed to stop auto-refresh system: {e}")
+        else:
+            logger.debug("Auto-refresh manager not available - nothing to stop")
+    
+    async def get_auto_refresh_status(self) -> Dict[str, Any]:
+        """Get the status of the auto-refresh system."""
+        if self.auto_refresh_manager:
+            try:
+                return await self.auto_refresh_manager.get_status()
+            except Exception as e:
+                logger.error(f"Failed to get auto-refresh status: {e}")
+                return {"status": "error", "error": str(e)}
+        else:
+            return {
+                "status": "disabled",
+                "message": "Auto-refresh manager not available or disabled"
+            }

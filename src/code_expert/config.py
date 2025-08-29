@@ -59,6 +59,43 @@ class DocumentationConfig:
 
 
 @dataclass
+class AutoRefreshConfig:
+    enabled: bool = True
+    active_repo_interval_hours: int = 24  # repos with commits < 7 days
+    inactive_repo_interval_hours: int = 168  # repos with commits >= 7 days (1 week)
+    startup_delay_seconds: int = 30  # delay before first auto-refresh
+    max_concurrent_refreshes: int = 2  # resource limit
+    activity_threshold_days: int = 7  # threshold for active vs inactive
+
+    def __post_init__(self):
+        """Validate configuration values."""
+        if self.active_repo_interval_hours < 1:
+            raise ValueError("active_repo_interval_hours must be at least 1 hour")
+        if self.active_repo_interval_hours > 168:  # 1 week
+            raise ValueError("active_repo_interval_hours cannot exceed 168 hours (1 week)")
+            
+        if self.inactive_repo_interval_hours < 1:
+            raise ValueError("inactive_repo_interval_hours must be at least 1 hour")
+        if self.inactive_repo_interval_hours > 168 * 4:  # 4 weeks
+            raise ValueError("inactive_repo_interval_hours cannot exceed 672 hours (4 weeks)")
+            
+        if self.startup_delay_seconds < 0:
+            raise ValueError("startup_delay_seconds cannot be negative")
+        if self.startup_delay_seconds > 300:  # 5 minutes
+            raise ValueError("startup_delay_seconds cannot exceed 300 seconds (5 minutes)")
+            
+        if self.max_concurrent_refreshes < 1:
+            raise ValueError("max_concurrent_refreshes must be at least 1")
+        if self.max_concurrent_refreshes > 10:
+            raise ValueError("max_concurrent_refreshes cannot exceed 10")
+            
+        if self.activity_threshold_days < 1:
+            raise ValueError("activity_threshold_days must be at least 1 day")
+        if self.activity_threshold_days > 365:
+            raise ValueError("activity_threshold_days cannot exceed 365 days")
+
+
+@dataclass
 class RepositoryConfig:
     cache_dir: Optional[str] = (
         None  # Path string from config or None for platform default
@@ -85,6 +122,7 @@ class ServerConfig:
     port: int = 8080
     repository: RepositoryConfig = None
     documentation: DocumentationConfig = None
+    auto_refresh: AutoRefreshConfig = None
 
     def __post_init__(self):
         if self.repository is None:
@@ -95,6 +133,10 @@ class ServerConfig:
             self.documentation = DocumentationConfig()
         elif isinstance(self.documentation, dict):  # Handle initialization from YAML
             self.documentation = DocumentationConfig(**self.documentation)
+        if self.auto_refresh is None:
+            self.auto_refresh = AutoRefreshConfig()
+        elif isinstance(self.auto_refresh, dict):  # Handle initialization from YAML
+            self.auto_refresh = AutoRefreshConfig(**self.auto_refresh)
 
 
 def ensure_default_config() -> None:
@@ -246,13 +288,23 @@ def _load_base_config(config_path_override: Optional[str] = None) -> ServerConfi
                 ):  # Ensure DocumentationConfig is always present
                     config_data["documentation"] = DocumentationConfig()
 
-                # Ensure ServerConfig always has repository and documentation objects
+                auto_refresh_conf_data = config_data.get("auto_refresh")
+                if auto_refresh_conf_data and isinstance(auto_refresh_conf_data, dict):
+                    config_data["auto_refresh"] = AutoRefreshConfig(**auto_refresh_conf_data)
+                elif (
+                    auto_refresh_conf_data is None
+                ):  # Ensure AutoRefreshConfig is always present
+                    config_data["auto_refresh"] = AutoRefreshConfig()
+
+                # Ensure ServerConfig always has repository, documentation, and auto_refresh objects
                 # even if they were not in the yaml file at all
                 final_config = ServerConfig(**config_data)
                 if final_config.repository is None:
                     final_config.repository = RepositoryConfig()
                 if final_config.documentation is None:
                     final_config.documentation = DocumentationConfig()
+                if final_config.auto_refresh is None:
+                    final_config.auto_refresh = AutoRefreshConfig()
 
                 logger.debug("Base configuration loaded:")
                 logger.debug(f"  Server Name: {final_config.name}")
@@ -267,6 +319,11 @@ def _load_base_config(config_path_override: Optional[str] = None) -> ServerConfi
                     logger.debug(
                         f"    Max Cached Repos: {final_config.repository.max_cached_repos}"
                     )
+                if final_config.auto_refresh:
+                    logger.debug(f"  Auto Refresh Config: {final_config.auto_refresh}")
+                    logger.debug(f"    Enabled: {final_config.auto_refresh.enabled}")
+                    logger.debug(f"    Active Interval: {final_config.auto_refresh.active_repo_interval_hours}h")
+                    logger.debug(f"    Inactive Interval: {final_config.auto_refresh.inactive_repo_interval_hours}h")
                 return final_config
             except Exception as e:
                 logger.error(f"Error loading configuration from {path_obj}: {e}")
@@ -330,5 +387,13 @@ def load_config(
         logger.info(f"    Max Cached Repos: {config.repository.max_cached_repos}")
     if config.documentation:
         logger.info(f"  Documentation Config: {config.documentation}")
+    if config.auto_refresh:
+        logger.info("  Auto Refresh:")
+        logger.info(f"    Enabled: {config.auto_refresh.enabled}")
+        logger.info(f"    Active Repo Interval: {config.auto_refresh.active_repo_interval_hours} hours")
+        logger.info(f"    Inactive Repo Interval: {config.auto_refresh.inactive_repo_interval_hours} hours")
+        logger.info(f"    Startup Delay: {config.auto_refresh.startup_delay_seconds} seconds")
+        logger.info(f"    Max Concurrent Refreshes: {config.auto_refresh.max_concurrent_refreshes}")
+        logger.info(f"    Activity Threshold: {config.auto_refresh.activity_threshold_days} days")
 
     return config

@@ -28,6 +28,7 @@ class RepositoryMetadata:
     clone_status: Dict[str, Any] = None
     repo_map_status: Optional[Dict[str, Any]] = None
     critical_files_analysis: Optional[Dict[str, Any]] = None  # Cache for critical files analysis
+    next_refresh_time: Optional[str] = None  # ISO format timestamp for auto-refresh scheduling
 
     def __post_init__(self):
         # Only set default if clone_status is explicitly None (not just empty dict)
@@ -337,6 +338,17 @@ class RepositoryCache:
                     path=path, url=None, last_access=datetime.now().isoformat()
                 )
             metadata[path].critical_files_analysis = analysis
+            self._write_metadata(metadata)
+
+    async def update_next_refresh_time(self, path: str, next_refresh_time: Optional[str]):
+        """Update next refresh time for auto-refresh scheduling"""
+        with self._file_lock():
+            metadata = self._read_metadata()
+            if path not in metadata:
+                metadata[path] = RepositoryMetadata(
+                    path=path, url=None, last_access=datetime.now().isoformat()
+                )
+            metadata[path].next_refresh_time = next_refresh_time
             self._write_metadata(metadata)
 
     async def get_repository_status(self, path: str) -> Dict[str, Any]:
