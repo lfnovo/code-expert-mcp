@@ -150,11 +150,18 @@ class AutoRefreshManager:
         """
         Calculate the next refresh time based on repository activity.
 
+        Determines if a repository is active (commits within activity_threshold_days)
+        and schedules the next refresh accordingly. Active repositories are refreshed
+        more frequently than inactive ones.
+
         Args:
-            repo_path: Path to the repository
+            repo_path: Absolute path to the repository to schedule
 
         Returns:
-            The next scheduled refresh time
+            datetime: The next scheduled refresh time. For new repositories, applies
+                     startup_delay_seconds. For existing repos, uses either
+                     active_repo_interval_hours or inactive_repo_interval_hours
+                     based on recent activity.
         """
         now = datetime.now()
         
@@ -176,11 +183,17 @@ class AutoRefreshManager:
         """
         Determine if a repository is considered active based on recent commits.
 
+        Checks the last commit date (for Git repos) or most recent file modification
+        time (for local directories) against the configured activity threshold.
+        Repositories with activity within activity_threshold_days are considered active.
+
         Args:
-            repo_path: Path to the repository
+            repo_path: Absolute path to the repository to check
 
         Returns:
-            True if the repository has recent activity, False otherwise
+            bool: True if the repository has activity within the threshold period,
+                 False otherwise. Returns False if unable to determine activity
+                 or if the repository has no commits/files.
         """
         try:
             last_commit_date = await self._get_last_commit_date(repo_path)
@@ -212,10 +225,17 @@ class AutoRefreshManager:
             try:
                 # Use GitPython for git operations
                 repo = Repo(repo_path_obj)
-                if repo.heads:  # Has commits
+                
+                # Handle different repository states
+                if repo.head.is_detached:
+                    # Detached HEAD state - get commit directly
+                    last_commit = repo.head.commit
+                    return datetime.fromtimestamp(last_commit.committed_date)
+                elif repo.heads:  # Has branches and commits
                     last_commit = repo.head.commit
                     return datetime.fromtimestamp(last_commit.committed_date)
                 else:
+                    # Empty repository
                     return None
                     
             except Exception as e:

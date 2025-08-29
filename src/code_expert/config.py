@@ -67,6 +67,33 @@ class AutoRefreshConfig:
     max_concurrent_refreshes: int = 2  # resource limit
     activity_threshold_days: int = 7  # threshold for active vs inactive
 
+    def __post_init__(self):
+        """Validate configuration values."""
+        if self.active_repo_interval_hours < 1:
+            raise ValueError("active_repo_interval_hours must be at least 1 hour")
+        if self.active_repo_interval_hours > 168:  # 1 week
+            raise ValueError("active_repo_interval_hours cannot exceed 168 hours (1 week)")
+            
+        if self.inactive_repo_interval_hours < 1:
+            raise ValueError("inactive_repo_interval_hours must be at least 1 hour")
+        if self.inactive_repo_interval_hours > 168 * 4:  # 4 weeks
+            raise ValueError("inactive_repo_interval_hours cannot exceed 672 hours (4 weeks)")
+            
+        if self.startup_delay_seconds < 0:
+            raise ValueError("startup_delay_seconds cannot be negative")
+        if self.startup_delay_seconds > 300:  # 5 minutes
+            raise ValueError("startup_delay_seconds cannot exceed 300 seconds (5 minutes)")
+            
+        if self.max_concurrent_refreshes < 1:
+            raise ValueError("max_concurrent_refreshes must be at least 1")
+        if self.max_concurrent_refreshes > 10:
+            raise ValueError("max_concurrent_refreshes cannot exceed 10")
+            
+        if self.activity_threshold_days < 1:
+            raise ValueError("activity_threshold_days must be at least 1 day")
+        if self.activity_threshold_days > 365:
+            raise ValueError("activity_threshold_days cannot exceed 365 days")
+
 
 @dataclass
 class RepositoryConfig:

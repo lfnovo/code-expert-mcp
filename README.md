@@ -15,6 +15,12 @@ An MCP (Model Context Protocol) server designed to understand codebases and prov
 - Retrieve and analyze repository documentation
 - Target analysis to specific files or directories
 - Keep analysis up-to-date with repository changes via refresh
+- **Auto-refresh system**: Intelligent repository synchronization that:
+  - Automatically refreshes active repositories every 24 hours
+  - Refreshes inactive repositories every 7 days
+  - Adapts to repository activity patterns
+  - Provides error handling and recovery mechanisms
+  - Offers configurable scheduling and resource management
 
 ## Quick Start: MCP Client Configuration
 
@@ -452,6 +458,15 @@ repository:
   cache_dir: "~/.cache/code-expert-mcp"
   max_cached_repos: 10
 
+# Auto-refresh system configuration
+auto_refresh:
+  enabled: true                       # Enable/disable auto-refresh
+  active_repo_interval_hours: 24      # Refresh interval for active repos (hours)
+  inactive_repo_interval_hours: 168   # Refresh interval for inactive repos (hours, 7 days)
+  startup_delay_seconds: 30           # Delay before first refresh on startup
+  max_concurrent_refreshes: 2         # Maximum concurrent refresh operations
+  activity_threshold_days: 7          # Days to consider repo active (based on commits)
+
 documentation:
   include_tags:
     - markdown
@@ -486,6 +501,33 @@ documentation:
       - examples
       - sample
 ```
+
+### Auto-Refresh System
+
+The auto-refresh system keeps your repository caches current by automatically refreshing them based on activity patterns:
+
+- **Active repositories** (with commits in the last 7 days): Refreshed every 24 hours by default
+- **Inactive repositories**: Refreshed every 7 days by default
+- **Smart scheduling**: Repositories are scheduled based on their last commit activity
+- **Error handling**: Failed refreshes use exponential backoff and temporary disabling
+- **Resource management**: Configurable concurrent refresh limits prevent system overload
+
+#### Configuration Options
+
+- `enabled`: Enable or disable the auto-refresh system (default: true)
+- `active_repo_interval_hours`: How often to refresh active repositories in hours (default: 24)
+- `inactive_repo_interval_hours`: How often to refresh inactive repositories in hours (default: 168)
+- `startup_delay_seconds`: Delay before starting refreshes on server startup (default: 30)
+- `max_concurrent_refreshes`: Maximum number of concurrent refresh operations (default: 2)
+- `activity_threshold_days`: Days to consider a repository active based on commit history (default: 7)
+
+#### Auto-Refresh Management Tools
+
+The server provides MCP tools to monitor and manage the auto-refresh system:
+
+- `get_auto_refresh_status`: Get detailed status including scheduled repositories, error statistics, and performance metrics
+- `start_auto_refresh`: Manually start the auto-refresh system (typically automatic)
+- `stop_auto_refresh`: Manually stop the auto-refresh system
 
 ## For Developers
 
