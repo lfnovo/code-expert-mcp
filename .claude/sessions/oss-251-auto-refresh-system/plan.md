@@ -82,65 +82,84 @@ Implement repository activity detection:
 - **Activity Analysis**: Combined with AutoRefreshManager implementation. Handles Git repos using GitPython + subprocess fallback, local dirs using file modification times.
 - **Resource Management**: Implements semaphore limiting and queue-based scheduling to prevent system overload during refreshes.
 
-## PHASE 2: Advanced Scheduling and Server Integration [Not Started ⏳]
+## PHASE 2: Advanced Scheduling and Server Integration [Completed ✅]
 
 **Goal**: Complete the scheduling system and integrate with MCP server startup.
 
-**Time Estimate**: 2 hours
+**Time Estimate**: 2 hours ➡️ **Actual Time**: ~2 hours
 
-### Task 2.1: Enhanced Scheduling Logic [Not Started ⏳]
+### Task 2.1: Enhanced Scheduling Logic [Completed ✅]
 
 **Location**: `src/code_expert/repository/auto_refresh.py`
 
 Build the complete scheduling system:
-- Persistent scheduling using repository metadata
-- `_schedule_next_refresh(repo_path: str)` - Calculate and store next refresh time
-- `_load_scheduled_refreshes()` - Restore schedules on startup
-- Integration with `RepositoryCache` to store next refresh times in metadata
-- Staggered startup refreshes to avoid system load spikes
+- ✅ Persistent scheduling using repository metadata
+- ✅ `_load_scheduled_refreshes()` - Restore schedules on startup with staggered execution
+- ✅ Integration with `RepositoryCache` to store next refresh times in metadata
+- ✅ Staggered startup refreshes to avoid system load spikes
+- ✅ Persistent metadata updates for next refresh times
 
 **Files Modified**: 
-- `src/code_expert/repository/auto_refresh.py`
-- `src/code_expert/repository/cache.py` (add next_refresh_time to RepositoryMetadata)
+- ✅ `src/code_expert/repository/auto_refresh.py` - Added persistent scheduling logic
+- ✅ `src/code_expert/repository/cache.py` - Added next_refresh_time field to RepositoryMetadata and update method
 
-### Task 2.2: MCP Server Integration [Not Started ⏳]
+### Task 2.2: MCP Server Integration [Completed ✅]
 
 **Location**: `src/code_expert/mcp/server/app.py`
 
 Integrate auto-refresh with server lifecycle:
-- Modify `create_mcp_server()` to initialize auto-refresh if enabled
-- Add startup hook in `main()` to call `repo_manager.start_auto_refresh()`
-- Add shutdown cleanup (signal handlers for graceful stop)
-- Server startup logging for auto-refresh status
+- ✅ Server lifecycle integration was already implemented in Phase 1
+- ✅ Startup and shutdown hooks properly configured
+- ✅ Auto-refresh management tools available via MCP
+- ✅ Added `get_status()` method to AutoRefreshManager for status reporting
 
 **Files Modified**: 
-- `src/code_expert/mcp/server/app.py`
+- ✅ `src/code_expert/repository/auto_refresh.py` - Added comprehensive status reporting
+- ✅ MCP server integration was already complete from Phase 1
 
-### Task 2.3: Error Handling and Recovery [Not Started ⏳]
+### Task 2.3: Error Handling and Recovery [Completed ✅]
 
 **Location**: `src/code_expert/repository/auto_refresh.py`
 
 Implement robust error handling:
-- Exponential backoff for failed refreshes (with max retry limit)
-- Skip repositories that consistently fail (after N attempts)
-- Comprehensive logging for refresh decisions and outcomes
-- Recovery from corrupted scheduling state
+- ✅ Exponential backoff for failed refreshes (30min base, max 24h delay)
+- ✅ Skip repositories after 3 consecutive failures
+- ✅ Comprehensive logging for refresh decisions and outcomes
+- ✅ Recovery mechanism - re-enable failed repos after 72 hours
+- ✅ Error count tracking and reset logic
+- ✅ Detailed error statistics in status reporting
 
 **Files Modified**: 
-- `src/code_expert/repository/auto_refresh.py`
+- ✅ `src/code_expert/repository/auto_refresh.py` - Comprehensive error handling and recovery
 
-### Task 2.4: Resource Management [Not Started ⏳]
+### Task 2.4: Resource Management [Completed ✅]
 
 **Location**: `src/code_expert/repository/auto_refresh.py`
 
 Add resource controls and monitoring:
-- Semaphore-based concurrent refresh limiting
-- Repository refresh status tracking (prevent duplicate refreshes)
-- Integration with existing repository locks from `refresh_repository()`
-- Monitor and log resource usage patterns
+- ✅ Enhanced semaphore-based concurrent refresh limiting (already present from Phase 1)
+- ✅ Repository refresh status tracking (prevent duplicate refreshes)
+- ✅ Integration with existing repository locks from `refresh_repository()`
+- ✅ Resource usage monitoring and statistics
+- ✅ Performance metrics tracking (duration, success rates)
+- ✅ Resource utilization reporting in status
 
 **Files Modified**: 
-- `src/code_expert/repository/auto_refresh.py`
+- ✅ `src/code_expert/repository/auto_refresh.py` - Added resource monitoring and performance tracking
+
+### Comments:
+- **Persistent Scheduling**: Successfully implemented with full recovery on startup. Schedules are staggered to prevent startup load spikes, and metadata is consistently updated.
+- **Error Handling**: Comprehensive exponential backoff system implemented. Repositories are automatically disabled after 3 consecutive failures and re-enabled after 72 hours of no errors. All error states are tracked and reported.
+- **Resource Management**: Enhanced with detailed performance monitoring, resource utilization tracking, and comprehensive statistics. Resource limits are properly enforced.
+- **Server Integration**: Lifecycle integration was already solid from Phase 1. Added detailed status reporting to provide visibility into system operation.
+- **Reliability**: System is designed to handle failures gracefully, recover from corrupted states, and provide detailed observability for troubleshooting.
+
+### Key Implementation Decisions:
+- **Constants**: Defined clear constants for error handling (MAX_CONSECUTIVE_FAILURES=3, MAX_BACKOFF_HOURS=24, etc.)
+- **State Management**: All scheduling state is persisted in metadata for recovery
+- **Performance**: Resource monitoring tracks timing and success rates for optimization
+- **Recovery**: Automatic recovery mechanisms prevent permanent repository disabling
+- **Observability**: Comprehensive status reporting provides visibility into all aspects of operation
 
 ## PHASE 3: Testing, Observability and Documentation [Not Started ⏳]
 
