@@ -1,0 +1,61 @@
+# Terraform variables for EC2 deployment
+# Copy this file to terraform.tfvars and customize with your values
+
+# AWS Configuration
+aws_region  = "us-east-1"
+aws_profile = "default"  # Your AWS CLI profile name
+
+# Service Configuration
+service_name = "code-expert-mcp"
+docker_image = "docker.io/lfnovo/code-expert-mcp:latest"
+
+# Instance configuration
+instance_type = "t3.small"  # 2 vCPU, 2 GB RAM - perfect for MCP
+volume_size   = 30          # 30 GB for git repository cache
+
+# Service settings
+max_cached_repos = "100"    # Maximum number of repositories to cache
+use_elastic_ip   = true     # Use Elastic IP for consistent addressing
+
+# Security - Add your IP for SSH access, or use ["0.0.0.0/0"] for all
+ssh_allowed_ips = []  # Example: ["203.0.113.0/24"] or leave empty to disable SSH
+
+# Logging
+log_retention_days = 7
+
+# Resource tags
+tags = {
+  Project     = "code-expert-mcp"
+  ManagedBy   = "terraform"
+  Environment = "production"
+  Owner       = "your-name"
+}
+
+# Domain configuration for Let's Encrypt (OPTIONAL but RECOMMENDED)
+# If you have a domain in Route 53, uncomment and configure these:
+# domain_name     = "code-expert.yourdomain.com"
+# route53_zone_id = "ZXXXXXXXXXXXXX"  # Run ./get-zone-id.sh to find your zone ID
+
+# Without a domain, the server will use a self-signed certificate
+# which may cause issues with Claude Desktop
+
+# Authentication for private repositories (OPTIONAL)
+# These tokens allow the MCP server to access private repositories
+# Uncomment and provide your actual tokens:
+# github_token     = "ghp_xxxxxxxxxxxxxxxxxxxx"  # GitHub Personal Access Token
+# azure_devops_pat = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  # Azure DevOps PAT
+
+# VPC Configuration (OPTIONAL - defaults to creating new VPC)
+# Option 1: Create new VPC (DEFAULT - no configuration needed)
+create_vpc = true
+
+# Option 2: Use existing VPC and subnet
+# Uncomment and configure these if you want to use existing VPC:
+# create_vpc = false
+# vpc_id     = "vpc-xxxxxxxxx"    # Your existing VPC ID
+# subnet_id  = "subnet-xxxxxxxxx" # Your existing public subnet ID
+
+# Note: When using existing VPC/subnet:
+# - The subnet must be public (internet gateway route)
+# - The subnet must be in one of the available AZs
+# - Your VPC must have DNS hostnames and DNS support enabled

@@ -1,0 +1,127 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "code-expert-mcp"
+version = "0.2.1"
+description = "MCP server for AI-assisted development"
+readme = "README.md"
+authors = [
+    {name = "Luis Novo", email = "lfnovo@gmail.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "mcp>=1.6.0",
+    "mcp[cli]>=1.6.0",
+    "gitpython==3.1.44",
+    "langchain==0.3.25",
+    "langchain-core>=0.3.29",
+    "langgraph>=0.2.0",
+    "esperanto>=2.4.1", # Multi-provider AI support
+    "aiohttp==3.11.18",
+    "pyyaml==6.0.2",
+    "typing-extensions==4.13.2",
+    "pathspec==0.12.1",
+    "aider-chat==0.84.0", # Brings in all needed tree-sitter and parsing dependencies
+    "configargparse==1.7.1", # Updated to non-yanked version
+    "identify==2.6.12", # For reliable text file detection
+    "lizard==1.17.31",
+    "debugpy==1.8.14", # For VS Code debugging support
+    "platformdirs==4.3.8",
+    "filelock==3.18.0",
+    "uvicorn==0.34.0", # For HTTP transport support
+    "starlette==0.45.2", # For OAuth endpoints # For form data handling
+    "python-multipart==0.0.17",
+    "click>=8.1.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.4.0",
+    "pytest-asyncio==1.0.0",
+    "pytest-cov==6.2.1",
+    "black==25.1.0",
+    "isort==6.0.1",
+    "mypy==1.16.1",
+    "pre-commit==4.2.0"
+]
+
+[project.scripts]
+code-expert-mcp = "code_expert.mcp.server.app:main"
+code-expert-mcp-simple = "code_expert.mcp.server.simple_http_app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/code_expert"]
+
+[tool.hatch.build]
+include = [
+    "src/code_expert/**/*.py",
+    "src/code_expert/**/*.yaml",
+    "src/code_expert/**/*.txt",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = ["--import-mode=importlib"]
+
+[tool.coverage.run]
+branch = true
+source = ["code_expert"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
+]
+ignore_errors = true
+omit = [
+    "tests/*",
+    "setup.py",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py311", "py312"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_optional = true

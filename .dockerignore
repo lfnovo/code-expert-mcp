@@ -1,0 +1,13 @@
+docker-compose.yml
+Dockerfile
+tests
+.cache
+.claude
+.cursor
+.ruff_cache
+.mypy_cache
+.venv
+claude-logs
+docs
+POC
+scripts

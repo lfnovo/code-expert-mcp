@@ -1,0 +1,14 @@
+services:
+  code-expert-mcp:
+    build: .
+    container_name: code-expert-mcp
+    # image: lfnovo/code-understanding
+    ports:
+      - "3001:3001"
+    environment:
+      - PYTHONPATH=/app
+      - MAX_CACHED_REPOS=50
+    volumes:
+      - ./.cache:/cache
+    privileged: true
+    restart: unless-stopped
