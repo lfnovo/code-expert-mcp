@@ -676,3 +676,5 @@ MIT
 ## Acknowledgments
 
 This project was originally inspired by [mcp-code-understanding](https://github.com/codingthefuturewithai/mcp-code-understanding).
+
+<!-- Trigger GitHub metadata refresh -->
