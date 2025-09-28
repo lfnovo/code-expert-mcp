@@ -672,3 +672,7 @@ You'll need PyPI credentials configured or you'll be prompted to enter them duri
 ## License
 
 MIT
+
+## Acknowledgments
+
+This project was originally inspired by [mcp-code-understanding](https://github.com/codingthefuturewithai/mcp-code-understanding).
