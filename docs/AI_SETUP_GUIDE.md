@@ -51,7 +51,7 @@ Help the user configure their MCP client with the verified binary path:
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": [],
       "env": {

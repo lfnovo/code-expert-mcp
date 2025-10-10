@@ -80,7 +80,7 @@ Use the verified binary path in your MCP client configuration:
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": []
     }
@@ -95,10 +95,10 @@ For uvx method (less reliable):
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "uvx",
       "args": [
-        "code-understanding-mcp-server"
+        "code-expert-mcp-server"
       ]
     }
   }
@@ -191,7 +191,7 @@ If you need to access private GitHub repositories or want to avoid API rate limi
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": [],
       "env": {
@@ -208,7 +208,7 @@ For private Azure DevOps repositories, add your Personal Access Token (PAT) to t
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": [],
       "env": {
@@ -225,7 +225,7 @@ You can configure both tokens if you work with repositories from both platforms:
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": [],
       "env": {
@@ -244,7 +244,7 @@ For advanced users, the server supports several configuration options:
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": [
         "--cache-dir", "~/custom-cache-dir",     // Override repository cache location

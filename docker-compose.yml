@@ -2,7 +2,7 @@ services:
   code-expert-mcp:
     build: .
     container_name: code-expert-mcp
-    # image: lfnovo/code-understanding
+    # image: lfnovo/code-expert-mcp
     ports:
       - "3001:3001"
     environment:
