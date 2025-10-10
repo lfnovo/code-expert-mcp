@@ -88,6 +88,7 @@ ExecStart=/usr/bin/docker run \
   -e CONTAINER=docker \
 %{ if github_token != "" }  -e GITHUB_PERSONAL_ACCESS_TOKEN="${github_token}" \
 %{ endif }%{ if azure_devops_pat != "" }  -e AZURE_DEVOPS_PAT="${azure_devops_pat}" \
+%{ endif }%{ if webhook_secret != "" }  -e WEBHOOK_SECRET="${webhook_secret}" \
 %{ endif }  ${docker_image}
 ExecStop=/usr/bin/docker stop ${service_name}
 

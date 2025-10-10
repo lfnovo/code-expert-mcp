@@ -45,6 +45,12 @@ tags = {
 # github_token     = "ghp_xxxxxxxxxxxxxxxxxxxx"  # GitHub Personal Access Token
 # azure_devops_pat = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  # Azure DevOps PAT
 
+# Webhook Configuration (OPTIONAL but RECOMMENDED)
+# Secret for validating incoming webhook signatures from GitHub
+# This enables automatic repository refreshes when code is pushed
+# Uncomment and set to a strong random value:
+# webhook_secret = "your-strong-random-secret-here"  # Must match GitHub webhook secret
+
 # VPC Configuration (OPTIONAL - defaults to creating new VPC)
 # Option 1: Create new VPC (DEFAULT - no configuration needed)
 create_vpc = true
