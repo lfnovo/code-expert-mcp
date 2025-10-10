@@ -116,8 +116,8 @@ async def run_simple_http_server(
             Route("/.well-known/oauth-protected-resource", fake_oauth_metadata),
             Route("/authorize", fake_authorize),
             Route("/token", fake_token, methods=["POST"]),
+            Route("/webhook", webhook_endpoint, methods=["POST"]),  # Must come before Mount
             Mount("/", app=handle_mcp),  # Mount MCP at root since Claude posts there
-            Route("/webhook", webhook_endpoint, methods=["POST"]),
         ],
         lifespan=lifespan,
     )
