@@ -36,14 +36,35 @@ async def handle_webhook(request: Request) -> JSONResponse:
     try:
         repo = await repo_manager.get_repository(repo_url)
     except Exception as e:
+        logger.error(f"Error accessing repository: {e}")
         return JSONResponse(
             {"detail": f"Error accessing repository: {e}"}, status_code=500
         )
 
     if not repo:
-        return JSONResponse(
-            {"detail": "Repository not found in cache"}, status_code=404
-        )
+        logger.info(f"Repository not in cache, attempting to clone: {repo_url}")
+        try:
+            clone_result = await repo_manager.clone_repository(repo_url)
+            if clone_result.get("status") in ["already_cloned", "pending"]:
+                logger.info(f"Repository cloned/cloning: {clone_result}")
+                # Try to get the repository again
+                repo = await repo_manager.get_repository(repo_url)
+                if not repo:
+                    return JSONResponse(
+                        {"detail": "Repository cloned but not available yet", "result": clone_result},
+                        status_code=202  # Accepted - processing
+                    )
+            else:
+                logger.error(f"Failed to clone repository: {clone_result}")
+                return JSONResponse(
+                    {"detail": "Failed to clone repository", "error": clone_result},
+                    status_code=500
+                )
+        except Exception as e:
+            logger.error(f"Error cloning repository: {e}")
+            return JSONResponse(
+                {"detail": f"Error cloning repository: {e}"}, status_code=500
+            )
 
     refresh_result = await repo.refresh()
     if refresh_result.get("status") == "success":
