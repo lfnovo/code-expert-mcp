@@ -9,17 +9,26 @@ async def handle_webhook(request: Request) -> JSONResponse:
     """
     Handles incoming webhooks to trigger repository refreshes.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("Webhook request received")
+
     if not await is_valid_signature(request):
+        logger.warning("Invalid webhook signature")
         return JSONResponse({"detail": "Unauthorized"}, status_code=401)
 
     repo_url = await get_repo_url(request)
+    logger.info(f"Parsed repo URL: {repo_url}")
     if not repo_url:
+        logger.error("Could not parse repository URL from payload")
         return JSONResponse(
             {"detail": "Could not parse repository URL from payload"}, status_code=400
         )
 
     repo_manager = getattr(request.app.state, "repo_manager", None)
+    logger.info(f"Repo manager: {repo_manager}")
     if not repo_manager:
+        logger.error("Repository manager not available in app.state")
         return JSONResponse(
             {"detail": "Repository manager not available"}, status_code=500
         )
