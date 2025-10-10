@@ -34,12 +34,15 @@ def create_mcp_server(config: ServerConfig = None) -> FastMCP:
     repo_manager = RepositoryManager(config.repository, server_config=config)
     repo_map_builder = RepoMapBuilder(cache=repo_manager.cache)
 
+    # Store repo_manager on server for webhook access
+    server._mcp_server.repo_manager = repo_manager
+
     # Register tools
     register_tools(server, repo_manager, repo_map_builder)
-    
+
     # Add auto-refresh management tools
     register_auto_refresh_tools(server, repo_manager)
-    
+
     # Add lifecycle hooks for auto-refresh
     add_lifecycle_hooks(server, repo_manager)
 
