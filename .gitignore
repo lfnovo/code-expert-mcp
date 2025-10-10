@@ -70,3 +70,6 @@ claude-logs
 .terraform/
 .terraform.lock.hcl
 terraform.tfvars
+
+
+tfplan

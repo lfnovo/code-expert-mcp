@@ -100,6 +100,13 @@ variable "azure_devops_pat" {
   sensitive   = true
 }
 
+variable "webhook_secret" {
+  description = "Secret for validating incoming webhook signatures (HMAC-SHA256)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 # VPC Configuration
 variable "create_vpc" {
   description = "Whether to create a new VPC or use an existing one"

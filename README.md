@@ -80,7 +80,7 @@ Use the verified binary path in your MCP client configuration:
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": []
     }
@@ -95,10 +95,10 @@ For uvx method (less reliable):
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "uvx",
       "args": [
-        "code-understanding-mcp-server"
+        "code-expert-mcp-server"
       ]
     }
   }
@@ -191,7 +191,7 @@ If you need to access private GitHub repositories or want to avoid API rate limi
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": [],
       "env": {
@@ -208,7 +208,7 @@ For private Azure DevOps repositories, add your Personal Access Token (PAT) to t
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": [],
       "env": {
@@ -225,7 +225,7 @@ You can configure both tokens if you work with repositories from both platforms:
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": [],
       "env": {
@@ -244,7 +244,7 @@ For advanced users, the server supports several configuration options:
 ```json
 {
   "mcpServers": {
-    "code-understanding": {
+    "code-expert": {
       "command": "/path/to/code-expert-mcp",
       "args": [
         "--cache-dir", "~/custom-cache-dir",     // Override repository cache location
@@ -678,3 +678,72 @@ MIT
 This project was originally inspired by [mcp-code-understanding](https://github.com/codingthefuturewithai/mcp-code-understanding).
 
 <!-- Trigger GitHub metadata refresh -->
+
+## Webhook Integration
+
+The MCP server supports webhook-triggered repository refreshes via a secure HTTP endpoint. This allows external systems (e.g., GitHub) to notify the server of repository changes and trigger an immediate refresh.
+
+
+### Webhook Endpoint
+
+- **URL:** `/webhook` (POST)
+- **Purpose:** Trigger a refresh of the repository specified in the webhook payload.
+- **Supported Providers:** GitHub (push events)
+
+> **Common issues? Check the [Troubleshooting](#troubleshooting) section below for quick tips.**
+
+#### Example: GitHub Webhook Setup
+
+1. Go to your repository's **Settings > Webhooks** in GitHub.
+2. Add a new webhook with the following settings:
+  - **Payload URL:** `https://your-server-domain/webhook`
+  - **Content type:** `application/json`
+  - **Secret:** Set to a strong random value (see below)
+  - **Events:** Choose "Just the push event" or as needed
+
+### Security: HMAC Signature Validation
+
+The server validates incoming webhook requests using HMAC-SHA256 signatures. You must set the `WEBHOOK_SECRET` environment variable to match the secret configured in your webhook provider (e.g., GitHub).
+
+**Environment Variable:**
+
+```bash
+export WEBHOOK_SECRET="your-strong-secret"
+```
+
+**Validation:**
+- The server checks the `X-Hub-Signature-256` header against the request body using the shared secret.
+- Requests with missing or invalid signatures are rejected with HTTP 401 Unauthorized.
+
+### Payload Parsing
+
+- The server extracts the repository clone URL from the webhook payload (currently supports GitHub push events).
+- If the repository cannot be parsed, the server returns HTTP 400 Bad Request.
+
+### Refresh Logic
+
+- If the repository is found in the cache, the server triggers a refresh (git pull).
+- If not found, the server attempts to clone it.
+- Success returns HTTP 200 with commit info; errors return appropriate status codes.
+
+### Example Request
+
+```bash
+curl -X POST https://your-server-domain/webhook \
+  -H "Content-Type: application/json" \
+  -H "X-Hub-Signature-256: sha256=..." \
+  -d '{ "repository": { "clone_url": "https://github.com/user/repo.git" }, ... }'
+```
+
+### Configuration Reference
+
+- Set `WEBHOOK_SECRET` in your environment for production use.
+- The endpoint is enabled by default when running the server.
+
+### Troubleshooting
+
+- **401 Unauthorized:** Check that your webhook secret matches `WEBHOOK_SECRET` and the signature is correct.
+- **400 Bad Request:** Ensure the payload includes a valid `repository.clone_url` field.
+- **500 Internal Server Error:** Indicates a problem with repository access or refresh logic.
+
+---

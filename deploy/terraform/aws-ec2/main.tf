@@ -194,6 +194,7 @@ resource "aws_instance" "mcp_server" {
     domain_name      = var.domain_name
     github_token     = var.github_token
     azure_devops_pat = var.azure_devops_pat
+    webhook_secret   = var.webhook_secret
   })
 
   # IAM instance profile for SSM access
