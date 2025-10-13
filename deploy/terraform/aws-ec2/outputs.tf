@@ -13,19 +13,14 @@ output "public_dns" {
   value       = aws_instance.mcp_server.public_dns
 }
 
-output "service_url_http" {
-  description = "HTTP URL of the MCP service"
-  value       = "http://${var.use_elastic_ip && length(aws_eip.mcp_server) > 0 ? aws_eip.mcp_server[0].public_ip : aws_instance.mcp_server.public_ip}"
+output "web_ui_url" {
+  description = "Web UI URL"
+  value       = var.domain_name != "" ? "https://${var.domain_name}" : "http://${var.use_elastic_ip && length(aws_eip.mcp_server) > 0 ? aws_eip.mcp_server[0].public_ip : aws_instance.mcp_server.public_ip}:3000"
 }
 
-output "service_url_https" {
-  description = "HTTPS URL of the MCP service (self-signed cert)"
-  value       = "https://${var.use_elastic_ip && length(aws_eip.mcp_server) > 0 ? aws_eip.mcp_server[0].public_ip : aws_instance.mcp_server.public_ip}"
-}
-
-output "mcp_direct_url" {
-  description = "Direct MCP service URL (port 3001)"
-  value       = "http://${var.use_elastic_ip && length(aws_eip.mcp_server) > 0 ? aws_eip.mcp_server[0].public_ip : aws_instance.mcp_server.public_ip}:3001"
+output "mcp_server_url" {
+  description = "MCP Server URL"
+  value       = var.mcp_domain_name != "" ? "https://${var.mcp_domain_name}" : "http://${var.use_elastic_ip && length(aws_eip.mcp_server) > 0 ? aws_eip.mcp_server[0].public_ip : aws_instance.mcp_server.public_ip}:3001"
 }
 
 output "ssh_command" {
@@ -43,7 +38,7 @@ output "cache_directory" {
   value       = "/var/cache/code-expert-mcp"
 }
 
-output "domain_url" {
-  description = "Domain URL if configured"
-  value       = var.domain_name != "" ? "https://${var.domain_name}" : "No domain configured"
+output "domains_configured" {
+  description = "Configured domains"
+  value       = var.domain_name != "" ? "Web UI: https://${var.domain_name}, MCP: https://${var.mcp_domain_name}" : "No domains configured"
 }

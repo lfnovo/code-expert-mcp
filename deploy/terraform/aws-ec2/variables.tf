@@ -75,7 +75,13 @@ variable "tags" {
 }
 
 variable "domain_name" {
-  description = "Domain name for the MCP server (e.g., code-expert.supernovalabs.com)"
+  description = "Domain name for the Web UI (e.g., code-expert.supernovalabs.com)"
+  type        = string
+  default     = ""
+}
+
+variable "mcp_domain_name" {
+  description = "Domain name for the MCP server (e.g., mcp.code-expert.supernovalabs.com)"
   type        = string
   default     = ""
 }
@@ -102,6 +108,13 @@ variable "azure_devops_pat" {
 
 variable "webhook_secret" {
   description = "Secret for validating incoming webhook signatures (HMAC-SHA256)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "repo_api_password" {
+  description = "API password for repository management endpoints"
   type        = string
   default     = ""
   sensitive   = true

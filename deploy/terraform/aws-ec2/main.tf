@@ -132,6 +132,15 @@ resource "aws_security_group" "mcp_server" {
     description = "Allow HTTPS"
   }
 
+  # Allow inbound on Web UI port
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow Web UI"
+  }
+
   # Allow inbound on MCP port
   ingress {
     from_port   = 3001
@@ -188,13 +197,15 @@ resource "aws_instance" "mcp_server" {
 
   # User data script to install Docker and run container
   user_data = templatefile("${path.module}/user_data.sh", {
-    docker_image     = var.docker_image
-    max_cached_repos = var.max_cached_repos
-    service_name     = var.service_name
-    domain_name      = var.domain_name
-    github_token     = var.github_token
-    azure_devops_pat = var.azure_devops_pat
-    webhook_secret   = var.webhook_secret
+    docker_image      = var.docker_image
+    max_cached_repos  = var.max_cached_repos
+    service_name      = var.service_name
+    domain_name       = var.domain_name
+    mcp_domain_name   = var.mcp_domain_name
+    github_token      = var.github_token
+    azure_devops_pat  = var.azure_devops_pat
+    webhook_secret    = var.webhook_secret
+    repo_api_password = var.repo_api_password
   })
 
   # IAM instance profile for SSM access
@@ -293,11 +304,21 @@ resource "aws_iam_instance_profile" "mcp_server" {
   tags = var.tags
 }
 
-# Route 53 DNS record (optional)
-resource "aws_route53_record" "mcp_server" {
+# Route 53 DNS record for Web UI
+resource "aws_route53_record" "web_ui" {
   count   = var.domain_name != "" && var.route53_zone_id != "" ? 1 : 0
   zone_id = var.route53_zone_id
   name    = var.domain_name
+  type    = "A"
+  ttl     = 60
+  records = [var.use_elastic_ip && length(aws_eip.mcp_server) > 0 ? aws_eip.mcp_server[0].public_ip : aws_instance.mcp_server.public_ip]
+}
+
+# Route 53 DNS record for MCP Server
+resource "aws_route53_record" "mcp_server" {
+  count   = var.mcp_domain_name != "" && var.route53_zone_id != "" ? 1 : 0
+  zone_id = var.route53_zone_id
+  name    = var.mcp_domain_name
   type    = "A"
   ttl     = 60
   records = [var.use_elastic_ip && length(aws_eip.mcp_server) > 0 ? aws_eip.mcp_server[0].public_ip : aws_instance.mcp_server.public_ip]

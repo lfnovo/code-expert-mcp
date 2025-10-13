@@ -67,43 +67,17 @@ async def run_simple_http_server(
             yield
             logger.info("MCP StreamableHTTP session manager shutting down...")
 
-    # Prepare SSL if needed - CHECK EARLY to determine protocol
-    ssl_keyfile = None
-    ssl_certfile = None
-    actual_protocol = "https"  # Default to HTTPS
-
-    if use_https:
-        cert_dir = Path("/app/certs")
-        if not cert_dir.exists():
-            cert_dir = Path.cwd() / "certs"
-
-        cert_file = cert_dir / "server.crt"
-        key_file = cert_dir / "server.key"
-
-        if cert_file.exists() and key_file.exists():
-            ssl_certfile = str(cert_file)
-            ssl_keyfile = str(key_file)
-            logger.info(f"Using SSL certificate from {cert_file}")
-        else:
-            logger.warning("No SSL certificate found. Running HTTP only.")
-            use_https = False
-            actual_protocol = "http"  # Server will run HTTP
-    else:
-        actual_protocol = "http"  # HTTPS disabled
-        logger.info("HTTPS disabled, running HTTP only")
-
     # Create fake OAuth endpoints that just redirect to allow access
     from starlette.responses import JSONResponse, RedirectResponse
     from starlette.routing import Route
 
     async def fake_oauth_metadata(request):
         """Return OAuth metadata to satisfy Claude's discovery."""
-        host = request.headers.get('host', f'localhost:{port}')
         return JSONResponse(
             {
-                "issuer": f"{actual_protocol}://{host}",
-                "authorization_endpoint": f"{actual_protocol}://{host}/authorize",
-                "token_endpoint": f"{actual_protocol}://{host}/token",
+                "issuer": f"https://{request.headers.get('host', 'localhost:3001')}",
+                "authorization_endpoint": f"https://{request.headers.get('host', 'localhost:3001')}/authorize",
+                "token_endpoint": f"https://{request.headers.get('host', 'localhost:3001')}/token",
             }
         )
 
@@ -162,7 +136,27 @@ async def run_simple_http_server(
         logger.error("uvicorn is required. Install with: uv pip install uvicorn")
         sys.exit(1)
 
-    # Configure and run uvicorn (SSL already configured at the top)
+    # Prepare SSL if needed
+    ssl_keyfile = None
+    ssl_certfile = None
+
+    if use_https:
+        cert_dir = Path("/app/certs")
+        if not cert_dir.exists():
+            cert_dir = Path.cwd() / "certs"
+
+        cert_file = cert_dir / "server.crt"
+        key_file = cert_dir / "server.key"
+
+        if cert_file.exists() and key_file.exists():
+            ssl_certfile = str(cert_file)
+            ssl_keyfile = str(key_file)
+            logger.info(f"Using SSL certificate from {cert_file}")
+        else:
+            logger.warning("No SSL certificate found. Running HTTP only.")
+            use_https = False
+
+    # Configure and run uvicorn
     config = uvicorn.Config(
         app=app,
         host=host,

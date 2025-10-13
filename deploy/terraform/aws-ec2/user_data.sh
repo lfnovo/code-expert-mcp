@@ -80,6 +80,7 @@ ExecStartPre=/usr/bin/docker pull ${docker_image}
 ExecStart=/usr/bin/docker run \
   --name ${service_name} \
   --rm \
+  -p 3000:3000 \
   -p 3001:3001 \
   -v /var/cache/code-expert-mcp:/cache \
   -e PYTHONPATH=/app \
@@ -89,6 +90,7 @@ ExecStart=/usr/bin/docker run \
 %{ if github_token != "" }  -e GITHUB_PERSONAL_ACCESS_TOKEN="${github_token}" \
 %{ endif }%{ if azure_devops_pat != "" }  -e AZURE_DEVOPS_PAT="${azure_devops_pat}" \
 %{ endif }%{ if webhook_secret != "" }  -e WEBHOOK_SECRET="${webhook_secret}" \
+%{ endif }%{ if repo_api_password != "" }  -e REPO_API_PASSWORD="${repo_api_password}" \
 %{ endif }  ${docker_image}
 ExecStop=/usr/bin/docker stop ${service_name}
 
@@ -107,17 +109,18 @@ pip3 install certbot certbot-nginx
 
 # Check if domain is provided
 if [ -n "${domain_name}" ]; then
-    echo "Setting up Let's Encrypt for ${domain_name}" | logger -t user-data
-    
+    echo "Setting up Let's Encrypt for ${domain_name} and ${mcp_domain_name}" | logger -t user-data
+
     # Configure nginx first with HTTP only for certbot
     cat > /etc/nginx/conf.d/mcp.conf <<'NGINX'
+# Web UI Server
 server {
     listen 80;
     listen [::]:80;
     server_name ${domain_name};
 
     location / {
-        proxy_pass http://localhost:3001;
+        proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -126,13 +129,13 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # Add CORS headers
         add_header Access-Control-Allow-Origin * always;
         add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
         add_header Access-Control-Allow-Headers "Content-Type, Accept, Authorization, X-Session-Id" always;
         add_header Access-Control-Max-Age 86400 always;
-        
+
         # Handle preflight requests
         if ($request_method = OPTIONS) {
             add_header Access-Control-Allow-Origin * always;
@@ -145,49 +148,12 @@ server {
         }
     }
 }
-NGINX
 
-    # Start nginx
-    systemctl enable nginx
-    systemctl start nginx
-    
-    # Wait for DNS to propagate (give it a moment)
-    sleep 30
-    
-    # Get Let's Encrypt certificate
-    certbot --nginx -d ${domain_name} --non-interactive --agree-tos --email admin@${domain_name} --redirect
-    
-    # Set up auto-renewal
-    echo "0 0,12 * * * root python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew -q" | tee -a /etc/crontab > /dev/null
-    
-else
-    echo "No domain provided, using self-signed certificate" | logger -t user-data
-    
-    # Generate self-signed certificate as fallback
-    mkdir -p /etc/nginx/ssl
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-      -keyout /etc/nginx/ssl/server.key \
-      -out /etc/nginx/ssl/server.crt \
-      -subj "/C=US/ST=State/L=City/O=MCP/CN=${service_name}.local"
-    
-    # Configure nginx with self-signed cert
-    cat > /etc/nginx/conf.d/mcp.conf <<'NGINX'
+# MCP Server
 server {
     listen 80;
     listen [::]:80;
-    server_name _;
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name _;
-
-    ssl_certificate /etc/nginx/ssl/server.crt;
-    ssl_certificate_key /etc/nginx/ssl/server.key;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
+    server_name ${mcp_domain_name};
 
     location / {
         proxy_pass http://localhost:3001;
@@ -199,13 +165,13 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
-        # Add CORS headers
+
+        # Add CORS headers for MCP
         add_header Access-Control-Allow-Origin * always;
         add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
         add_header Access-Control-Allow-Headers "Content-Type, Accept, Authorization, X-Session-Id" always;
         add_header Access-Control-Max-Age 86400 always;
-        
+
         # Handle preflight requests
         if ($request_method = OPTIONS) {
             add_header Access-Control-Allow-Origin * always;
@@ -223,6 +189,21 @@ NGINX
     # Start nginx
     systemctl enable nginx
     systemctl start nginx
+
+    # Wait for DNS to propagate (give it a moment)
+    sleep 30
+
+    # Get Let's Encrypt certificates for both domains
+    certbot --nginx -d ${domain_name} -d ${mcp_domain_name} --non-interactive --agree-tos --email admin@${domain_name} --redirect
+    
+    # Set up auto-renewal
+    echo "0 0,12 * * * root python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew -q" | tee -a /etc/crontab > /dev/null
+    
+else
+    echo "No domain provided, running without nginx proxy" | logger -t user-data
+    # Without domain names, services run on their original ports
+    # Web UI: http://server-ip:3000
+    # MCP Server: http://server-ip:3001
 fi
 
 # Set up daily auto-update check (optional)
