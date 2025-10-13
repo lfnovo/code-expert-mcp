@@ -47,8 +47,8 @@ COPY --from=frontend-builder /frontend/dist ./frontend/dist
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
-# Create cache directory
-RUN mkdir -p /cache
+# Create cache and certs directories
+RUN mkdir -p /cache /app/certs
 
 # Install dependencies
 RUN uv sync --locked

@@ -22,5 +22,6 @@ services:
       - AZURE_DEVOPS_TOKEN=${AZURE_DEVOPS_TOKEN:-}
     volumes:
       - ./.cache:/cache
+      - ./certs:/app/certs:ro  # Mount self-signed certs for local HTTPS
     privileged: true
     restart: unless-stopped
