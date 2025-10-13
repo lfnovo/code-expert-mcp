@@ -73,3 +73,7 @@ terraform.tfvars
 
 
 tfplan
+
+/specs
+.specify/
+

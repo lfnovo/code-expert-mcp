@@ -108,7 +108,20 @@ async def run_simple_http_server(
         request.app.state.repo_manager = app.state.repo_manager
         return await handle_webhook(request)
 
-    # Create Starlette app with MCP endpoint and fake OAuth
+    # API endpoints for repository management
+    from code_expert.api.handlers import (
+        handle_clone_repository,
+        handle_list_repositories,
+        handle_delete_repository
+    )
+
+    api_routes = [
+        Route("/api/repos/clone", handle_clone_repository, methods=["POST"]),
+        Route("/api/repos", handle_list_repositories, methods=["GET"]),
+        Route("/api/repos", handle_delete_repository, methods=["DELETE"]),
+    ]
+
+    # Create Starlette app with MCP endpoint, fake OAuth, webhook, and API routes
     app = Starlette(
         debug=True,
         routes=[
@@ -117,7 +130,8 @@ async def run_simple_http_server(
             Route("/authorize", fake_authorize),
             Route("/token", fake_token, methods=["POST"]),
             Route("/webhook", webhook_endpoint, methods=["POST"]),  # Must come before Mount
-            Mount("/", app=handle_mcp),  # Mount MCP at root since Claude posts there
+            *api_routes,  # API routes will be added here
+            Mount("/", app=handle_mcp),  # Mount MCP at root since Claude posts there (must be last)
         ],
         lifespan=lifespan,
     )

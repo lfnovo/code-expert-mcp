@@ -8,6 +8,13 @@ services:
     environment:
       - PYTHONPATH=/app
       - MAX_CACHED_REPOS=50
+      - CACHE_DIR=/cache
+      # Repository Management API password - CHANGE THIS IN PRODUCTION!
+      - REPO_API_PASSWORD=${REPO_API_PASSWORD:-changeme-secure-password}
+      # Optional: GitHub token for higher rate limits
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      # Optional: Azure DevOps token
+      - AZURE_DEVOPS_TOKEN=${AZURE_DEVOPS_TOKEN:-}
     volumes:
       - ./.cache:/cache
     privileged: true
