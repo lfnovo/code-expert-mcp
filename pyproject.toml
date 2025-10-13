@@ -60,6 +60,7 @@ dev = [
 [project.scripts]
 code-expert-mcp = "code_expert.mcp.server.app:main"
 code-expert-mcp-simple = "code_expert.mcp.server.simple_http_app:main"
+code-expert-web = "code_expert.web.app:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/code_expert"]

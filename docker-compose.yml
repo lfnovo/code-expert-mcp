@@ -1,10 +1,15 @@
 services:
   code-expert-mcp:
-    build: .
+    build:
+      context: .
+      args:
+        # Empty API URL for same-origin requests in production
+        VITE_API_URL: ""
     container_name: code-expert-mcp
     # image: lfnovo/code-expert-mcp
     ports:
-      - "3001:3001"
+      - "3000:3000"  # Web UI and API
+      - "3001:3001"  # MCP server
     environment:
       - PYTHONPATH=/app
       - MAX_CACHED_REPOS=50

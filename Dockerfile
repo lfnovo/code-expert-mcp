@@ -1,3 +1,25 @@
+# Stage 1: Build frontend
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /frontend
+
+# Copy frontend package files
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy frontend source
+COPY frontend/ ./
+
+# Build argument for API URL (empty for production = same origin)
+ARG VITE_API_URL=
+ENV VITE_API_URL=${VITE_API_URL}
+
+# Build frontend
+RUN npm run build
+
+# Stage 2: Python backend with frontend
 FROM python:3.12
 
 # Install uv
@@ -18,6 +40,13 @@ WORKDIR /app
 # Copy project files
 COPY . .
 
+# Copy frontend build artifacts from stage 1
+COPY --from=frontend-builder /frontend/dist ./frontend/dist
+
+# Copy and make entrypoint script executable
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
 # Create cache directory
 RUN mkdir -p /cache
 
@@ -33,7 +62,8 @@ ENV CONTAINER=docker
 # HTTP only - HTTPS handled by load balancers/proxies
 ENV MCP_USE_HTTPS=false
 
-EXPOSE 3001
+# Expose both API and frontend ports
+EXPOSE 3000 3001
 
-# Use the simple HTTP entrypoint
-CMD ["sh", "-c", "uv run code-expert-mcp-simple --host 0.0.0.0 --port 3001 --cache-dir /cache --max-cached-repos ${MAX_CACHED_REPOS}"]
+# Use the entrypoint script to start both servers
+CMD ["/app/docker-entrypoint.sh"]
