@@ -78,3 +78,7 @@ tfplan
 .specify/
 
 certs/
+
+# Claude Code and Playwright MCP directories
+.claude/commands/*
+.playwright-mcp/*
